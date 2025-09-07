@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+ <script type="text/javascript">
+    let loginErrorClear = function (){
+      $('#login_error').html('');
+    }
+    setTimeout(loginErrorClear, 10000);
+
+  </script>
+  <!-- your login form here -->
+  <div class="card p-5">
+    <div class="d-flex justify-content-center">
+      <h2> Please, enter your credentials! </h2>
+    </div>
+
+    <form method="post">
+      <div class="mb-3">
+        <label for="username" class="form-label">User Name:</label>
+        <input type="text" class="form-control" id="username" name="username" required>
+      </div>
+
+      <div class="mb-3 password-container">
+        <label for="password" class="form-label">Password:</label>
+        <i class="fa-solid fa-eye toggle-password" id="togglePassword"></i>
+        <input type="password" class="form-control" id="password" name="password" required placeholder="Enter password">
+      </div>
+    </br>
+      <div id="login_error"><b>{{result}}</b></div></br>
+      <button type="submit" class="btn btn-primary w-25 mt-3">Log In</button>
+    </form>
+
+  </div>
+
+  <script>
+    document.getElementById("togglePassword").addEventListener("click", function () {
+        const pwdField = document.getElementById("password");
+        if (pwdField.type === "password") {
+            pwdField.type = "text";
+            this.classList.remove("fa-eye");
+            this.classList.add("fa-eye-slash");
+        } else {
+            pwdField.type = "password";
+            this.classList.remove("fa-eye-slash");
+            this.classList.add("fa-eye");
+        }
+    });
+    </script>
+{% endblock %}
