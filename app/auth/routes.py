@@ -40,8 +40,14 @@ def login():
 
 @auth_bp.route('/save_new_user/<string:name>/<string:ps>', methods=['GET'])
 def create_new_user(name, ps):
-    save_new_user(name, ps)
-    return render_template('dashboard.html', username=session['username'])
+    msg = f"New user created!"
+    if session['username'] == 'admin':
+        save_new_user(name, ps)
+    else:
+        msg = f"You have not authorities to create new user!"
+
+    return render_template('dashboard.html', username=session['username'], msg=msg)
+
 
 @auth_bp.route('/logout')
 def logout():

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from datetime import datetime
-from app.helpers.db import create_portfolio, delete_portfolio, portfolio_data, portfolio_quotes
+from app.helpers.db import create_portfolio, delete_portfolio, portfolio_data, portfolio_quotes,update_quote_prices
 from app.helpers.db import all_symbols, all_dividents, add_quote, refresh_quotes
 from app.helpers.db import delete_protfolio_quote, edit_quote, all_dividents, add_div, delete_div, div_for_quote_and_year
 from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array
