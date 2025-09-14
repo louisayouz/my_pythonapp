@@ -1,9 +1,7 @@
 from flask import Flask, session, redirect, url_for, request
 from datetime import timedelta
 import os
-from .helpers.db import close_db
-
-
+from app.helpers.db import close_db
 
 def create_app():
     app = Flask(__name__)

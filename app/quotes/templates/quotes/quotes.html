@@ -173,6 +173,7 @@
 
    <h2> Quotes in Portfolio (user:{{user_name}} {{for_year}} year) </h2>
     {% set ns = namespace(total=0) %}
+    {% set nsc = namespace(total_cur=0) %}
     {% set nns = namespace(divtotal=0) %}
     <table id="data" class="table table-striped">
       <thead>
@@ -183,8 +184,8 @@
           <th> Buying Qty </th>
           <th> Current  Qty</th>
           <th> Cost </th>
-          <th> From Month</th>
-          <th> To Month</th>
+          <th> From </br> Month</th>
+          <th> To </br> Month</th>
           <th> </th>
         </tr>
       </thead>
@@ -221,12 +222,13 @@
           </tr>
 
           {% set ns.total = ns.total + entry[4] %}
+          {% set nsc.total_cur = nsc.total_cur + ( entry[11] * entry[3])%}
           {% set nns.divtotal = nns.divtotal + entry[9] %}
         {% endfor %}
       </tbody>
     </table>
 
-    <strong><i>Cost: {{ ns.total }} </i></strong>
+    <strong><i>Cost: {{ ns.total }}</strong> / {{nsc.total_cur}} </i>
     {% set nns.realdiv = nns.divtotal - (nns.divtotal * 25)/ 100 %}
     &nbsp; <strong><i>Year Dividends Payed: </i> {{ nns.divtotal }} </strong> <i>(after taxes (25%) : {{ nns.realdiv}})</i>
     <span id="errmsg"> {{ err }}</span>

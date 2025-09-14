@@ -2,7 +2,7 @@ import os
 import bcrypt
 import psycopg2
 from psycopg2 import sql, OperationalError, IntegrityError
-from app.helpers.utils import get_stock_info, nearest_weekday
+from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
@@ -26,8 +26,14 @@ def get_user_by_username(username):
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("SELECT username, password, id, password_hash FROM users WHERE username = %s", (username,))
-    user = cur.fetchone()
+    row = cur.fetchone()
     cur.close()
+    if not row:
+        return row
+
+    user = list(row)
+    if isinstance(user[3], memoryview):
+         user[3] = user[3].tobytes()
     return user
 
 #insert secure user password
@@ -451,7 +457,7 @@ def all_symbols():
 
         )QP on TRUE
     """
-
+    print (stmt)
     cur.execute(stmt)
     data = cur.fetchall()
     cur.close()

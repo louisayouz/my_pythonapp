@@ -1,11 +1,16 @@
 from flask import Blueprint, render_template, request, session, redirect, url_for
-from app.helpers.db import get_user_by_username
+from app.helpers.db import get_user_by_username, save_new_user
+import os
 import bcrypt
 
 auth_bp = Blueprint('auth', __name__, template_folder="templates")
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
+    db_psql = False
+    if os.environ.get("DB_SUPPORT") == 'postgresql':
+        db_psql = True
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -17,7 +22,11 @@ def login():
         if user[3] is None:
             valid = user[1] == password
         else:
-            valid = bcrypt.checkpw(password.encode("utf-8"), user[3].tobytes())
+            hashed = user[3]
+            #if db_psql:
+            #    hashed = user[3].tobytes()
+
+            valid = bcrypt.checkpw(password.encode("utf-8"), hashed)
 
         if valid:
             session['username'] = username
@@ -27,6 +36,12 @@ def login():
         return render_template('auth/login.html', result="Invalid credentials!")
 
     return render_template('auth/login.html', result="")
+
+
+@auth_bp.route('/save_new_user/<string:name>/<string:ps>', methods=['GET'])
+def create_new_user(name, ps):
+    save_new_user(name, ps)
+    return render_template('dashboard.html', username=session['username'])
 
 @auth_bp.route('/logout')
 def logout():

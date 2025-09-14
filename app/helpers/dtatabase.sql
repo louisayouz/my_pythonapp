@@ -22,18 +22,28 @@ CREATE SEQUENCE portfolios_id_seq;
 
 );
 
-CREATE SEQUENCE portfolios_id_seq;
-CREATE TABLE portfolio_quotes (
+CREATE SEQUENCE portfolio_quotes_id_seq;
+CREATE TABLE IF NOT EXISTS public.portfolio_quotes
+(
     id integer NOT NULL DEFAULT nextval('portfolio_quotes_id_seq'::regclass),
     portfolio_id integer NOT NULL,
-    quote_name character varying(32),
-	buy_price numeric(8,3),
-	buy_count integer,
-
-	created_at timestamp without time zone,
+    quote_name character varying(32) COLLATE pg_catalog."default",
+    buy_price numeric(8,3),
+    buy_count integer,
+    created_at timestamp without time zone,
     updated_at timestamp without time zone,
-	CONSTRAINT portfolio_quotes_pkey PRIMARY KEY (id)
-);
+    from_year integer,
+    from_month smallint,
+    to_year integer,
+    to_month smallint,
+    current_quotes_count integer,
+    CONSTRAINT portfolio_quotes_pkey PRIMARY KEY (id),
+    CONSTRAINT portfolio_quotes_from_year_check CHECK (from_year >= 2010 AND from_year <= 2100),
+    CONSTRAINT portfolio_quotes_from_month_check CHECK (from_month >= 1 AND from_month <= 12),
+    CONSTRAINT portfolio_quotes_to_year_check CHECK (to_year >= 2010 AND to_year <= 2100),
+    CONSTRAINT portfolio_quotes_to_month_check CHECK (to_month >= 1 AND to_month <= 12)
+)
+
 
 CREATE UNIQUE INDEX IF NOT EXISTS index_portfolio_quotes_on_portfolio_id_quote_name
 ON public.portfolio_quotes USING btree
@@ -127,7 +137,7 @@ TABLESPACE pg_default;
 ALTER TABLE IF EXISTS public.users OWNER to louisayouz;
 ALTER TABLE users ADD COLUMN password_hash BYTEA;
 
-
+CREATE SEQUENCE  quote_price_id_seq;
 CREATE TABLE IF NOT EXISTS public.quotes_price
 (
     id integer NOT NULL DEFAULT nextval('quote_price_id_seq'::regclass),

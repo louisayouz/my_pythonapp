@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from datetime import datetime
 from app.helpers.db import all_dividents, delete_div, add_div, edit_div, div_for_quote_and_year, add_full_year_div
 from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array
+
 dividends_bp = Blueprint('dividends', __name__, template_folder="templates")
 
 
