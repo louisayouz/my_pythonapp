@@ -38,14 +38,13 @@
 
     let newPrice = $('#closeprice_symbol_'+ sendButtonId).val();
     let id_quote_price = id.replace('closeprice_symbol_', '');
-    let quote_and_price = id_quote_price.replace('_', '/');
 
-    if ( newPrice * 1 == 0 || quote_and_price.split('/')[0] == ''){
+    if ( newPrice * 1 == 0){
       return alert("Failed to update Close Price");
     }
 
     $.ajax({
-      url: "/editquotecloseprice/"+quote_and_price +"/"+newPrice,
+      url: "/editquotecloseprice/"+id_quote_price + "/" +newPrice,
       method: "POST",
       success: function (response) {
         console.log("Close Price Update ", response);
@@ -60,6 +59,7 @@
         alert("Failed to update Close Price");
       }});
   }
+
   $(document).ready(function () {
     $("input[id^='closeprice_symbol_']").on("input", function () {
       // Get the numeric suffix from input id
@@ -100,7 +100,7 @@
             {% if entry[3]*1 != 0 and entry[4] != '' %}
               <td>{{entry[3]}}</td>
             {% else %}
-              {% set close_price_at_date = "%s_%s" % (entry[1], entry[4])  %}
+              {% set close_price_at_date = "%s" % (entry[1])%}
               <td>
                 <input id="closeprice_symbol_{{ns.sendButtonId}}" value="{{entry[3]}}" buttonid="{{ns.sendButtonId}}" maxlength="8" size="8">
                 <button id="sendButton{{ns.sendButtonId}}" style="display: none;" onclick="ChangeClosePrice('closeprice_symbol_{{close_price_at_date}}', {{ns.sendButtonId}})">Send</button>

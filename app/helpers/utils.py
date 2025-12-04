@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import os
 import requests
 
@@ -45,7 +45,6 @@ def get_stock_info(symbol, for_day):
       'Content-Type': 'application/json'
    }
 
-
    #requestResponse = requests.get("https://api.tiingo.com/tiingo/daily/{symbol}?token={token}", headers=headers)
    print ( f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={for_day}&token={token}")
                                    #https://api.tiingo.com/tiingo/daily/aapl/prices
@@ -54,9 +53,9 @@ def get_stock_info(symbol, for_day):
    if requestResponse.status_code ==200:
       res = requestResponse.json()
       if res:
-         return float(res[0]['close'])
+         return float(res[0]['close']), float(res[0]['divCash'])
    else:
-      return float(0.0)
+      return float(0.0), float(0.0)
   #requestResponse = requests.get("https://api.tiingo.com/tiingo/daily/{symbol}?token={token}", headers=headers)
 
 def nearest_weekday():
@@ -67,3 +66,26 @@ def nearest_weekday():
          start_date -= timedelta(days=1)
 
    return start_date.strftime("%Y-%m-%d")
+
+def month_from_timestamp(val, is_timestamp=None):
+   try:
+      if is_timestamp is None:
+         dt = datetime.strptime(val, "%Y-%m-%d")
+      else:
+         dt = datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
+
+      return dt.month
+   except ValueError:
+        return 0
+
+
+def year_from_timestamp(val, is_timestamp=None):
+   try:
+      if is_timestamp is None:
+         dt = datetime.strptime(val, "%Y-%m-%d")
+      else:
+         dt = datetime.strptime(val, "%Y-%m-%d %H:%M:%S")
+
+      return dt.year
+   except ValueError:
+        return 0

@@ -2,8 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from datetime import datetime
 from app.helpers.db import create_portfolio, delete_portfolio, portfolio_data, portfolio_quotes,update_quote_prices
 from app.helpers.db import all_symbols, all_dividents, add_quote, refresh_quotes
-from app.helpers.db import delete_protfolio_quote, edit_quote, all_dividents, add_div, delete_div, div_for_quote_and_year
-from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array
+from app.helpers.db import delete_protfolio_quote, edit_quote, all_dividents, add_div, delete_div, div_for_quote_and_year,delete_symbol
+from app.helpers.db import import_quote_divs
+from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array,nearest_weekday
 
 quotes_bp = Blueprint('quotes', __name__, template_folder="templates")
 
@@ -100,13 +101,18 @@ def refresh_stocks():
     refresh_quotes()
     return 'successfully'
 
-@quotes_bp.route('/editquotecloseprice/<string:symbol>/<string:close_price_date>/<string:price>', methods=['POST'] )
-def editquotecloseprice(symbol, close_price_date, price ):
+@quotes_bp.route('/import_div', methods=['GET'] )
+def import_div():
+    import_quote_divs('APLE', 0.08, nearest_weekday())
+    return render_template('quotes/symbols.html', symbols=all_symbols())
+
+@quotes_bp.route('/editquotecloseprice/<string:symbol>/<string:price>', methods=['POST'] )
+def editquotecloseprice(symbol, price ):
     symbol = validate_string(symbol)
-    close_date = validate_string(close_price_date)
+    close_price_date = nearest_weekday()
     price = validate_numeric(price)
 
-    if price == 0 or close_date=='' or symbol=='':
+    if price == 0 or close_price_date=='' or symbol=='':
         return 'failed'
 
     print(f"{symbol} {close_price_date} {price}")

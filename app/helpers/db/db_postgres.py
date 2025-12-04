@@ -2,7 +2,7 @@ import os
 import bcrypt
 import psycopg2
 from psycopg2 import sql, OperationalError, IntegrityError
-from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string
+from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string,  month_from_timestamp, year_from_timestamp
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
@@ -319,23 +319,21 @@ def add_div(symbol, div_price, pay_year, pay_month):
     cur = conn.cursor()
     try:
 
-      cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
-                  (symbol, div_price, pay_year, pay_month))
-      conn.commit()
-    except psycopg2.Error as e:
-        print("SQL error:", e)
-    finally:
-      cur.close()
+      #cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
+      #            (symbol, div_price, pay_year, pay_month))
+      #
+      stmt = """
+        INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)
+        VALUES(%s, %s, %s, %s)
+        ON CONFLICT (quote_name, pay_year, pay_month) DO UPDATE
+        SET div_price = EXCLUDED.div_price,
+		pay_year = EXCLUDED.pay_year,
+		pay_month = EXCLUDED.pay_month,
+        quote_name = EXCLUDED.quote_name;
+      """
+      print(stmt)
 
-    return True
-
-def add_div(symbol, div_price, pay_year, pay_month):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-
-      cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
-                  (symbol, div_price, pay_year, pay_month))
+      cur.execute(stmt, (symbol, div_price, pay_year, pay_month))
       conn.commit()
     except psycopg2.Error as e:
         print("SQL error:", e)
@@ -458,6 +456,7 @@ def all_symbols():
         )QP on TRUE
     """
     print (stmt)
+
     cur.execute(stmt)
     data = cur.fetchall()
     cur.close()
@@ -472,7 +471,7 @@ def refresh_quotes():
     conn = get_db_connection()
     cur = conn.cursor()
     stmt = """
-        SELECT DISTINCT quote_name FROM quotes GROUP BY quote_name
+        SELECT DISTINCT quote_name FROM quotes WHERE quote_name = 'MAWHY' GROUP BY quote_name
     """
 
     cur.execute(stmt)
@@ -481,12 +480,48 @@ def refresh_quotes():
     for_day = nearest_weekday()
 
     data = []
+    data_div_cash = []
     for row in quotes:
-        close_val = get_stock_info(row[0], for_day)
+        close_val, div_cash = get_stock_info(row[0], for_day)
         data.append([row[0],close_val])
+        if div_cash > 0:
+            data_div_cash.append([row[0], div_cash])
+            import_quote_divs(row[0], div_cash, for_day)
+
+    print(data_div_cash)
 
     update_quote_prices(data, for_day)
     return all_symbols()
+
+def import_quote_divs(symbol, div, for_day):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    stmt = f"""
+        INSERT INTO quote_divs_imp (quote_name, dividend, div_date, created_at, updated_at)
+        VALUES(%s, %s, %s, NOW(), NOW())
+        ON CONFLICT (quote_name, div_date) DO UPDATE
+        SET dividend = EXCLUDED.dividend,
+        quote_name = EXCLUDED.quote_name;
+    """
+    print(stmt)
+    print(for_day)
+
+    pay_year = year_from_timestamp(for_day)
+    pay_month = month_from_timestamp(for_day)
+    print(pay_year, pay_month)
+
+    try:
+      cur.execute(stmt, (symbol, div, for_day))
+      conn.commit()
+
+      if pay_year * pay_month > 0 :
+           add_div(symbol, div, pay_year, pay_month)
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+      cur.close()
+    return
+
 
 def update_quote_prices(data, for_day):
     print(data)
@@ -547,4 +582,43 @@ def get_last_prices():
         }
     return rebuilt_quotes_prices
 
+def refresh_divs(symbol, for_year):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    stmt = f"""
+    SELECT A.quote_name, A.dividend,
+           TO_CHAR(A.div_date, 'YYYY'), TO_CHAR(A.div_date, 'MM')
+    FROM quote_divs_imp A
+    LEFT JOIN LATERAL(
+        SELECT C.*
+        FROM quote_divs_imp C
+        WHERE A.quote_name = C.quote_name
+            AND TO_CHAR(A.div_date, 'YYYY') = TO_CHAR(C.div_date, 'YYYY')
+            AND TO_CHAR(A.div_date, 'MM') = TO_CHAR(C.div_date, 'MM')
+    ORDER BY C.quote_name,
+        TO_CHAR(C.div_date, 'YYYY') DESC,
+        TO_CHAR(C.div_date, 'MM') DESC
+    LIMIT 1
+    )C on TRUE
+    WHERE  A.quote_name = '{symbol}'
+            AND TO_CHAR(A.div_date, 'YYYY') = '{for_year}'
+    """
 
+    cur.execute(stmt)
+    divs = cur.fetchall()
+    cur.close()
+    print(divs)
+
+    for row in divs:
+        symbol = row[0]
+        div_price = row[1]
+        pay_year = row[2]
+        pay_month = row[3]
+
+     #"INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)
+     # VALUES(%s, %s, %s, %s)
+     # ON CONFLICT (quote_name, pay_year, pay_month) DO UPDATE
+     # SET div_price = EXCLUDED.div_price;",
+     #             (symbol, div_price, pay_year, pay_month))
+
+    return

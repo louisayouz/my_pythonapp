@@ -4,7 +4,7 @@ import mysql.connector
 #import psycopg2
 #from psycopg2 import sql, OperationalError, IntegrityError
 
-from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string
+from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string, month_from_timestamp, year_from_timestamp
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
@@ -318,27 +318,18 @@ def add_div(symbol, div_price, pay_year, pay_month):
     conn = get_db_connection()
     cur = conn.cursor()
     try:
+        stmt = f"""
+        INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month, created_at, updated_at)
+        VALUES(%s, %s, %s, %s, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        div_price = VALUES(div_price),
+        updated_at = VALUES(updated_at);
+        """
 
-      cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
-                  (symbol, div_price, pay_year, pay_month))
-      conn.commit()
-    #except psycopg2.Error as e:
-    except mysql.connector.Error as e:
-        print("SQL error:", e)
-    finally:
-      cur.close()
-
-    return True
-
-def add_div(symbol, div_price, pay_year, pay_month):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    try:
-
-      cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
-                  (symbol, div_price, pay_year, pay_month))
-      conn.commit()
-    #except psycopg2.Error as e:
+        cur.execute(stmt, (symbol, div_price, pay_year, pay_month))
+        #cur.execute("INSERT INTO quote_dividents (quote_name, div_price, pay_year, pay_month)  VALUES(%s, %s, %s, %s)",
+        #           (symbol, div_price, pay_year, pay_month))
+        conn.commit()
     except mysql.connector.Error as e:
         print("SQL error:", e)
     finally:
@@ -483,15 +474,51 @@ def refresh_quotes():
     cur.execute(stmt)
     quotes = cur.fetchall()
     cur.close()
+
     for_day = nearest_weekday()
 
     data = []
+    data_div_cash = []
     for row in quotes:
-        close_val = get_stock_info(row[0], for_day)
+        close_val, div_cash = get_stock_info(row[0], for_day)
         data.append([row[0],close_val])
+        if div_cash > 0:
+            data_div_cash.append([row[0], div_cash])
+            import_quote_divs(row[0], div_cash, for_day)
+
 
     update_quote_prices(data, for_day)
+    print(data_div_cash)
     return all_symbols()
+
+
+def import_quote_divs(symbol, div, for_day):
+    #first - save on side, after that - into table
+    conn = get_db_connection()
+    cur = conn.cursor()
+    stmt = f"""
+        INSERT INTO quote_divs_imp (quote_name, dividend, div_date, created_at, updated_at)
+        VALUES(%s, %s, %s, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+        dividend = VALUES(dividend),
+        updated_at = VALUES(updated_at);
+    """
+    print(stmt)
+
+    pay_year = year_from_timestamp(for_day)
+    pay_month = month_from_timestamp(for_day)
+    try:
+        cur.execute(stmt, (symbol, div, for_day))
+        conn.commit()
+
+        if pay_year * pay_month > 0:
+           add_div(symbol, div, pay_year, pay_month)
+
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return
 
 def update_quote_prices(data, for_day):
     print(data)
@@ -505,6 +532,7 @@ def update_quote_prices(data, for_day):
     )
 
     conn = get_db_connection()
+    print(conn)
     cur = conn.cursor()
     stmt = f"""
     INSERT INTO quotes_price (quote_name, close_price, last_date_at, created_at, updated_at)
@@ -513,12 +541,12 @@ def update_quote_prices(data, for_day):
         close_price = VALUES(close_price),
         updated_at = VALUES(updated_at);
     """
+    print(stmt)
 
     try:
       cur.execute(stmt)
       conn.commit()
     except mysql.connector.Error as e:
-    #except psycopg2.Error as e:
         print("SQL error:", e)
     finally:
       cur.close()
@@ -551,5 +579,3 @@ def get_last_prices():
             for row in quote_prices
         }
     return rebuilt_quotes_prices
-
-
