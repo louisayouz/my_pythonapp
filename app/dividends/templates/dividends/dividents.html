@@ -36,6 +36,7 @@
       method: "GET",
       success: function(){
         console.log("Dividends created ");
+        window.location.href = "/quotedividents/"+ symbol;
       },
       error: function () {
         alert("Operation failed");
