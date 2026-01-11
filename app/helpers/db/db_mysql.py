@@ -189,7 +189,7 @@ def add_quote(portfolio_id, symbol, price, quotes_count, from_year, from_month, 
     conn = get_db_connection()
 
     cur_to_quotes = conn.cursor()
-    cur_to_quotes.execute("SELECT id FROM quotes WHERE quote_name=%s", (symbol,))
+    cur_to_quotes.execute("SELECT id FROM quotes WHERE quote_name=%s LIMIT 1", (symbol,))
     res = cur_to_quotes.fetchone()
     cur_to_quotes.close()
 
@@ -393,6 +393,23 @@ def edit_div(id, new_price):
         print("SQL error:", e)
     finally:
       cur.close()
+    return True
+
+def exist_cur_year_divs(symbol):
+    curyear = datetime.now().year
+    conn = get_db_connection()
+    cur = conn.cursor()
+    stmt = "SELECT id FROM quote_dividents WHERE pay_year = %s AND quote_name = %s LIMIT 1"
+    try:
+        cur.execute(stmt,(curyear, symbol))
+        row = cur.fetchone()
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    if not row:
+        return False
+
     return True
 
 def all_dividents(symbol=None):
@@ -632,7 +649,7 @@ def prev_year_exist(portfolio_id, prev_year):
     conn = get_db_connection()
     cur = conn.cursor()
     try:
-        cur.execute("SELECT id FROM portfolio_quotes WHERE portfolio_id=%s AND from_year=%s", (portfolio_id, prev_year))
+        cur.execute("SELECT id FROM portfolio_quotes WHERE portfolio_id=%s AND from_year=%s LIMIT 1", (portfolio_id, prev_year))
         row = cur.fetchone()
     except mysql.connector.Error as e:
         print("SQL error:", e)
