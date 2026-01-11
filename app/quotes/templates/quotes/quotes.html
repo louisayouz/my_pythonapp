@@ -166,6 +166,20 @@
     });
 
   });  //document ready
+
+
+  function copyQuotes(){
+    $.ajax({
+      url: "/copy_portfolio/{{portfolioid}}",
+      method: "POST",
+      success: function (response) {
+        console.log("refrefreshed", response);
+        window.location.href = "/quotes/{{portfolioid}}/{{for_year}}";
+      },
+      error: function () {
+        console.log("Failed to copy quotes");
+      }});
+  };
 </script>
 
   <!-- your quotes in portfolio  here {{quotes}} -->
@@ -186,6 +200,7 @@
           <th> Cost </th>
           <th> From </br> Month</th>
           <th> To </br> Month</th>
+          <th> Dividents</br> Info</th>
           <th> </th>
         </tr>
       </thead>
@@ -200,25 +215,35 @@
             <td class="ss"> ( {{entry[8]}}) </td>
             <td class="ss">{{ entry[4] }} {{total}}</td>
 
-            <!--- the year is same -->
+            <!--- the year is same for showing -->
             <td class="from_month">{{ entry[6]}}</td>
             <td class="to_month"> {% if entry[7] %} {{ entry[7]}} {% endif %}</td>
-            <td><a href="#" onclick="editQuotePopup( '{{ entry[0]}}' )">Edit</a>&nbsp;
-
-            {% if entry[10] == 'add' %}
-              <a href="#" onclick="AddNewQuoteCount( '{{ entry[0]}}')">Add</a>&nbsp;
-            {% endif %}
-            <a href="/deletequote/{{ portfolioid}}/{{ entry[0]}}"> Delete </a>&nbsp;
+            <td>
 
             {% if entry[5] %}
               {% set tomonth = 12 %}
               {% if entry[7] %}
               {% set tomonth = entry[7] %}
               {% endif %}
-              <a href="#"  onclick="ShowDividends('{{entry[1]}}', {{for_year}}, {{ entry[6]}}, {{tomonth}})"> {{entry[9]}} </a> &nbsp;
-              <a href="/quotedividents/{{ entry[1] }}"> To All Dividends </a></td>
+              <a href="#" onclick="ShowDividends('{{entry[1]}}', '{{for_year}}', '{{ entry[6]}}', '{{tomonth}}')"> {{entry[9]}} </a> &nbsp;
+              <a href="/quotedividents/{{ entry[1] }}"  title="To All Dividends"><i class="bi bi-fan text-primary"></i></a></td>
             {% endif %}
+            </td>
+            <td>
+              <a href="#" onclick="editQuotePopup( '{{ entry[0]}}' )" title="Edit"><i class="bi bi-pencil text-primary"></i></a>&nbsp;
 
+            <!---<a href="/deletequote/{{ portfolioid}}/{{ entry[0]}}" title="Delete">
+              <i class="bi bi-trash"></i>
+            </a>&nbsp;
+            ---->
+
+            <a href="{{ url_for('quotes.delete_quote_to_portfolio', portfolioid=portfolioid, quoteid=entry[0]) }}" title="Delete"><i class="bi bi-trash text-danger" ></i></a>
+            &nbsp;
+
+            {% if entry[10] == 'add' %}
+            <a href="#" onclick="AddNewQuoteCount( '{{ entry[0]}}')" title="Add"><i class="bi-plus-circle text-success"></i></a>
+            &nbsp;
+             {% endif %}
           </tr>
 
           {% set ns.total = ns.total + entry[4] %}
@@ -233,7 +258,11 @@
     &nbsp; <strong><i>Year Dividends Payed: </i> {{ nns.divtotal }} </strong> <i>(after taxes (25%) : {{ nns.realdiv}})</i>
     <span id="errmsg"> {{ err }}</span>
     </br>
-    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()">Add New Quote</button>
+    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()"><i class="bi bi-plus-circle"></i> Add New Quote</button>
+
+    {% if copy_prtf_button %}
+    <button type="submit" class="btn btn-primary w-50 mt-3" onclick="copyQuotes()"><i class="bi bi-plus-circle"></i> Copy Quotes To Current Year({{for_year}})</button>
+    {% endif %}
 
     <div class="content">
       <div onclick="togglePopup()" class="close-btn">

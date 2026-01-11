@@ -7,7 +7,6 @@ from app.helpers.utils import validate_int, validate_string, validate_numeric, s
 
 dividends_bp = Blueprint('dividends', __name__, template_folder="templates")
 
-
 @dividends_bp.route('/quotedividents', methods=['GET'])
 @dividends_bp.route('/quotedividents/<string:quote_symbol>', methods=['GET'])
 def quotedividents(quote_symbol=None):
@@ -17,7 +16,6 @@ def quotedividents(quote_symbol=None):
     else:
         # Handle general case
         data = all_dividents()
-    #print(data)
     return render_template('dividents.html', data = data, single_quote = (quote_symbol is not None), quote_symbol = quote_symbol)
 
 @dividends_bp.route('/adddiv', methods=['POST'] )
@@ -30,7 +28,6 @@ def adddiv():
     div_month = validate_int(request.form['divmonth'])
 
     #print(symbol, div_price, div_year, div_month)
-
     err=''
     if ( div_price > 0) and (div_year >0  and div_month > 0) and (symbol != ''):
         add_div(symbol.upper(), div_price, div_year, div_month)
@@ -60,10 +57,10 @@ def deletediv(quote_symbol, divid):
     delete_div(divid, quote_symbol)
     return redirect(url_for('dividends.quotedividents', quote_symbol=quote_symbol))
 
-@dividends_bp.route('/importquotedividents/<string:quote_symbol>', methods=['GET'])
-def importquotedividents(quote_symbol):
-    import_quote(quote_symbol, '2025-01-01', '2025-05-01')
-    return redirect(url_for('dividends.quotedividents', quote_symbol=quote_symbol))
+# @dividends_bp.route('/importquotedividents/<string:quote_symbol>', methods=['GET'])
+# def importquotedividents(quote_symbol):
+#     import_quote(quote_symbol, '2025-01-01', '2025-05-01')
+#     return redirect(url_for('dividends.quotedividents', quote_symbol=quote_symbol))
 
 @dividends_bp.route('/getquotedivs/<string:quote_symbol>/<int:foryear>/<int:frommonth>/<int:tomonth>', methods=['GET'])
 def getquotedivs(quote_symbol,foryear, frommonth, tomonth):

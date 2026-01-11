@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from datetime import datetime
 from app.helpers.db import create_portfolio, delete_portfolio, portfolio_data
+from app.helpers.db import copy_portfolio_to_new_year
 
 portfolio_bp = Blueprint('portfolio', __name__, template_folder="templates")
 
@@ -25,5 +26,11 @@ def portfolio():
 def delete_user_portfolio(portfolioid):
     delete_portfolio(session['user_id'], portfolioid)
     return redirect(url_for('portfolio.portfolio'))
+
+@portfolio_bp.route('/copy_portfolio/<int:portfolioid>',methods=['POST'])
+def copy_portfolio(portfolioid):
+    copy_portfolio_to_new_year(portfolioid)
+    return 'successfully' #redirect(url_for('portfolio.portfolio'))
+
 
 

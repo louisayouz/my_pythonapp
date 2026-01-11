@@ -35,13 +35,14 @@
           <td>{{ entry[0]}}</td>
           <td>{{ entry[1] }}</td>
           <td><a href="/quotes/{{ entry[0]}}/{{for_year}}" > To Quotes - {{for_year}} Year</a></td>
-          <td><a href="/delete_portfolio/{{ entry[0]}}"  onclick="allow_portfolio_deletion(event, '{{ entry[1] }}')"> &nbsp; Delete </a></td>
-
+          <td><a href="/delete_portfolio/{{ entry[0]}}"  onclick="allow_portfolio_deletion(event, '{{ entry[1] }}')" title="Delete Portfolio"><i class="bi bi-trash text-danger" ></i></a></td>
         </tr>
       {% endfor %}
     </tbody>
     </table>
-    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()">Create New Portfolio</button>
+    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()">
+       <i class="bi bi-plus-circle"></i> Create New Portfolio
+      </button>
     </div>
     <div class="content">
       <div onclick="togglePopup()" class="close-btn">

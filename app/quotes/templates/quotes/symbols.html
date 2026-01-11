@@ -84,7 +84,7 @@
           <th>&nbsp;Quote Price&nbsp; </th>
           <th>&nbsp;For Date&nbsp; </th>
           <th>&nbsp;</th>
-          <th>&nbsp;</th>
+          <!---<th>&nbsp;</th> -->
 
         </tr>
       </thead>
@@ -108,17 +108,18 @@
             {% endif %}
 
             <td>{{entry[4]}}</td>
-            <td> <a href="/quotedividents/{{ entry[1] }}"> &nbsp; To Dividends &nbsp;&nbsp;</a> </td>
+            <td> <a href="/quotedividents/{{ entry[1] }}" title="To Dividends"><i class="bi bi-zoom-in text-primary"></i></a> </td>
 
             <td>
               {% if entry[2] == 'not_used' %}
-              <a href="/deletesymbol/{{ entry[1] }}"> &nbsp; Delete Quote &nbsp;&nbsp;</a>
+              <a href="/deletesymbol/{{ entry[1] }}" title=" Delete Quote"><i class="bi bi-trash text-danger" ></i></a>
               {% else %}
                  &nbsp;
               {% endif %}
             </td>
 
-            <td> <a href="/importquotedividents/{{ entry[1] }}"> &nbsp; Import Quote Dividends &nbsp;</a> </td>
+            <!---<td> <a href="/importquotedividents/{{ entry[1] }}"> &nbsp; Import Quote Dividends &nbsp;</a> </td>
+          --->
           </tr>
         {% set ns.sendButtonId = ns.sendButtonId+1 %}
         {% endfor %}

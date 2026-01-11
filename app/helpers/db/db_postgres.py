@@ -110,7 +110,7 @@ def portfolio_quotes(portfolio_id, calc_year=None):
     WHERE portfolio_id=%s AND from_year<=%s AND ( to_year IS NULL OR to_year=%s)
     ORDER BY portfolio_quotes.quote_name, id DESC
     """
-    #print(stmt)
+    print(stmt)
     cur.execute(stmt,(for_year, portfolio_id, for_year, for_year) )
     data = cur.fetchall()
     cur.close()
@@ -150,10 +150,12 @@ def div_for_quote_and_year(quote_name, for_year, from_month, to_month):
         AND pay_month <= %s AND pay_month >= %s AND div_price >0
         ORDER BY pay_year DESC, pay_month DESC
         """
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(stmt,(quote_name, for_year, to_month, from_month) )
     div_data = cur.fetchall()
+
     data = [{"month": row[0], "price": row[1]} for row in div_data]
     cur.close()
     return data
@@ -397,10 +399,20 @@ def edit_div(id, new_price):
       cur.close()
     return True
 
-def all_dividents(symbol=None):
+def exist_cur_year_divs(symbol):
+    curyear = datetime.now().year
     conn = get_db_connection()
     cur = conn.cursor()
+    stmt = "SELECT id FROM quote_dividents WHERE pay_year = %s AND quote_name = %s"
 
+    cur.execute(stmt, ( curyear, symbol))
+    row = cur.fetchone()
+    cur.close()
+    if not row:
+        return False
+    return True
+
+def all_dividents(symbol=None):
     if symbol:
         whereclause = " WHERE quote_name = '" + symbol +"'"
     else:
@@ -411,6 +423,8 @@ def all_dividents(symbol=None):
     order_by = " ORDER BY pay_year DESC, pay_month DESC"
 
     #print(stmt + whereclause + order_by)
+    conn = get_db_connection()
+    cur = conn.cursor()
     cur.execute(stmt + whereclause +order_by)
     column_names = [desc[0] for desc in cur.description]
 
@@ -471,7 +485,9 @@ def refresh_quotes():
     conn = get_db_connection()
     cur = conn.cursor()
     stmt = """
-        SELECT DISTINCT quote_name FROM quotes WHERE quote_name = 'MAWHY' GROUP BY quote_name
+        SELECT DISTINCT quote_name FROM quotes
+        /* WHERE quote_name = 'MAWHY'*/
+        GROUP BY quote_name
     """
 
     cur.execute(stmt)
@@ -622,3 +638,63 @@ def refresh_divs(symbol, for_year):
      #             (symbol, div_price, pay_year, pay_month))
 
     return
+
+def copy_portfolio_to_new_year(portfolio_id, from_year_p=None):
+    cur_year = datetime.now().year
+    if from_year_p is None:
+        from_year = cur_year - 1
+    else:
+        from_year = from_year_p
+
+    stmt = f"""
+    INSERT INTO portfolio_quotes
+    (portfolio_id, quote_name, buy_price, buy_count, from_year, from_month, current_quotes_count)
+    SELECT %s, quote_name, buy_price, current_quotes_count, %s, 1, current_quotes_count
+    FROM portfolio_quotes
+    WHERE from_year=%s AND to_month=12 AND to_year=%s AND portfolio_id=%s
+    """
+    print(stmt)
+    print(portfolio_id, cur_year, from_year, from_year, portfolio_id )
+
+    check_and_update_last_year_quotes_in_portfolio(portfolio_id, from_year)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(stmt, (portfolio_id, cur_year, from_year, from_year,portfolio_id))
+        conn.commit()
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return
+
+def check_and_update_last_year_quotes_in_portfolio(portfolio_id, from_year):
+    stmt = f"""
+    UPDATE portfolio_quotes
+    SET to_month = 12
+    WHERE portfolio_id = %s AND from_year=%s AND to_month IS NULL
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(stmt, (portfolio_id, from_year))
+        conn.commit()
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return
+
+def prev_year_exist(portfolio_id, prev_year):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id FROM portfolio_quotes WHERE portfolio_id=%s AND from_year=%s", (portfolio_id, prev_year))
+        row = cur.fetchone()
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+
+    return row is not None

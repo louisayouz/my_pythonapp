@@ -579,3 +579,63 @@ def get_last_prices():
             for row in quote_prices
         }
     return rebuilt_quotes_prices
+
+
+def copy_portfolio_to_new_year(portfolio_id, from_year_p=None):
+    cur_year = datetime.now().year
+    if from_year_p is None:
+        from_year = cur_year - 1
+    else:
+        from_year = from_year_p
+
+    stmt = f"""
+    INSERT INTO portfolio_quotes
+    (portfolio_id, quote_name, buy_price, buy_count, from_year, from_month, current_quotes_count)
+    SELECT %s, quote_name, buy_price, current_quotes_count, %s, 1, current_quotes_count
+    FROM portfolio_quotes
+    WHERE from_year=%s AND to_month=12 AND to_year=%s AND portfolio_id=%s
+    """
+    print(stmt)
+    print(portfolio_id, cur_year, from_year, from_year, portfolio_id )
+
+    check_and_update_last_year_quotes_in_portfolio(portfolio_id, from_year)
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(stmt, (portfolio_id, cur_year, from_year, from_year,portfolio_id))
+        conn.commit()
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return
+
+def check_and_update_last_year_quotes_in_portfolio(portfolio_id, from_year):
+    stmt = f"""
+    UPDATE portfolio_quotes
+    SET to_month = 12
+    WHERE portfolio_id = %s AND from_year=%s AND to_month IS NULL
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(stmt, (portfolio_id, from_year))
+        conn.commit()
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return
+
+def prev_year_exist(portfolio_id, prev_year):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT id FROM portfolio_quotes WHERE portfolio_id=%s AND from_year=%s", (portfolio_id, prev_year))
+        row = cur.fetchone()
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+    return row is not None

@@ -3,7 +3,8 @@ from datetime import datetime
 from app.helpers.db import create_portfolio, delete_portfolio, portfolio_data, portfolio_quotes,update_quote_prices
 from app.helpers.db import all_symbols, all_dividents, add_quote, refresh_quotes
 from app.helpers.db import delete_protfolio_quote, edit_quote, all_dividents, add_div, delete_div, div_for_quote_and_year,delete_symbol
-from app.helpers.db import import_quote_divs
+from app.helpers.db import import_quote_divs, exist_cur_year_divs, prev_year_exist
+
 from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array,nearest_weekday
 
 quotes_bp = Blueprint('quotes', __name__, template_folder="templates")
@@ -17,13 +18,19 @@ def quotes(portfolioid, calcyear=None):
     else:
         for_year = calcyear
 
-    #print(data)
     err = request.args.get('err') or ''
-    return render_template('quotes/quotes.html', quotes=data, symbols = symbols_as_array(data), user_name=session['username'], portfolioid=portfolioid, for_year=for_year, err=err)
+    return render_template('quotes/quotes.html',
+                    quotes=data,
+                    symbols = symbols_as_array(data),
+                    user_name=session['username'],
+                    portfolioid=portfolioid,
+                    for_year=for_year,
+                    copy_prtf_button=( len(data) == 0 ) and prev_year_exist(portfolioid, (for_year-1)),
+                    err=err)
 
 @quotes_bp.route('/addquote', methods=['POST'] )
 def addquote_to_portfolio():
-    print("POST Data:", request.form)
+    #print("POST Data:", request.form)
     portfolio_id = validate_int(request.form['portfolioid'])
     symbol = validate_string(request.form['symbol'])
     price = validate_numeric(request.form['price'])
@@ -47,7 +54,7 @@ def addquote_to_portfolio():
 
     return redirect(url_for('quotes.quotes', portfolioid=portfolio_id, calcyear=from_year, err=err))
 
-@quotes_bp.route('/deletequote/<int:portfolioid>/<int:quoteid>', methods=['GET'] )
+@quotes_bp.route('/deletequote/<int:portfolioid>/<int:quoteid>', methods=['POST', 'GET'] )
 def delete_quote_to_portfolio(portfolioid, quoteid):
     delete_protfolio_quote(portfolioid, quoteid)
 
@@ -79,11 +86,16 @@ def quotedividents(quote_symbol=None):
     if quote_symbol:
         # Handle specific quote
         data = all_dividents(quote_symbol)
+        add_div_year_button = not exist_cur_year_divs(quote_symbol)
     else:
         # Handle general case
         data = all_dividents()
-    #print(data)
-    return render_template('dividends/dividents.html', data = data, single_quote = (quote_symbol is not None), quote_symbol = quote_symbol)
+        add_div_year_button = False
+
+    return render_template('dividends/dividents.html', data = data, single_quote = (quote_symbol is not None),
+                            quote_symbol = quote_symbol,
+                            add_div_year_button = add_div_year_button,
+                            curr_year = datetime.now().year)
 
 @quotes_bp.route('/symbols', methods=['GET'])
 def symbols():
