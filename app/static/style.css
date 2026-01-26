@@ -141,3 +141,7 @@
 .password-container .toggle-password:hover {
   color: #000;
 }
+.sub-row {
+  font-style: italic;
+  color: #630606;
+}

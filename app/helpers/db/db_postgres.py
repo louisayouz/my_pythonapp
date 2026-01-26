@@ -1,4 +1,5 @@
 import os
+import sys
 import bcrypt
 import psycopg2
 from psycopg2 import sql, OperationalError, IntegrityError
@@ -11,6 +12,8 @@ import json
 from flask import g
 
 def get_db_connection():
+    #sys.exit(1)
+
     if 'db' not in g:
         db_url = os.environ.get("DATABASE_URL")
         g.db = psycopg2.connect(db_url)

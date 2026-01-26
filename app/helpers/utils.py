@@ -50,12 +50,14 @@ def get_stock_info(symbol, for_day):
                                    #https://api.tiingo.com/tiingo/daily/aapl/prices
    requestResponse = requests.get(f"https://api.tiingo.com/tiingo/daily/{symbol}/prices?startDate={for_day}&token={token}", headers=headers)
    #print(requestResponse.json())
-   if requestResponse.status_code ==200:
+   #print('status code:' , requestResponse.status_code)
+
+   if requestResponse.status_code == 200:
       res = requestResponse.json()
       if res:
          return float(res[0]['close']), float(res[0]['divCash'])
-   else:
-      return float(0.0), float(0.0)
+
+   return float(0.0), float(0.0)
   #requestResponse = requests.get("https://api.tiingo.com/tiingo/daily/{symbol}?token={token}", headers=headers)
 
 def nearest_weekday():
