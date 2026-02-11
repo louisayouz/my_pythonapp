@@ -98,7 +98,7 @@
             <td>{{ entry[1] }}</td>
 
             {% if entry[3]*1 != 0 and entry[4] != '' %}
-              <td>{{entry[3]}}</td>
+              <td> {{entry[3]}}<div class="sub-row" >{{entry[5]}}</div></td>
             {% else %}
               {% set close_price_at_date = "%s" % (entry[1])%}
               <td>
@@ -107,7 +107,7 @@
               </td>
             {% endif %}
 
-            <td>{{entry[4]}}</td>
+            <td>{{entry[4]}} <div class="sub-row" >{{entry[6]}}</div></td>
             <td> <a href="/quotedividents/{{ entry[1] }}" title="To Dividends"><i class="bi bi-zoom-in text-primary"></i></a> </td>
 
             <td>

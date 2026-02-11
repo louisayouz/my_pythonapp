@@ -457,18 +457,29 @@ def all_symbols():
     cur = conn.cursor()
 
     stmt = """
-       SELECT Q.id, Q.quote_name,
-       COALESCE(QP.close_price, 0.0) AS close_price,
-       COALESCE(DATE_FORMAT(QP.last_date_at, '%Y-%m-%d'), '') AS last_date_at
-    FROM quotes Q
-        LEFT JOIN LATERAL(
-            SELECT QP.*
-            FROM  quotes_price QP
-            WHERE Q.quote_name=QP.quote_name
-            ORDER BY QP.quote_name, QP.last_date_at DESC
-            LIMIT 1
-
-        )QP on TRUE
+    SELECT
+    q.id,
+    q.quote_name,
+    COALESCE(MAX(CASE WHEN qp.rn = 1 THEN qp.close_price END), 0) AS close_price,
+    COALESCE(DATE_FORMAT(
+        MAX(CASE WHEN qp.rn = 1 THEN qp.last_date_at END),
+        '%Y-%m-%d'
+    ), '') AS last_date_at,
+    COALESCE(MAX(CASE WHEN qp.rn = 2 THEN qp.close_price END), 0) AS prev_to_last_close_price,
+    COALESCE(DATE_FORMAT(
+        MAX(CASE WHEN qp.rn = 2 THEN qp.last_date_at END),
+        '%Y-%m-%d'
+    ), '') AS prev_to_last_date_at
+    FROM quotes q
+    LEFT JOIN (
+        SELECT *,
+            ROW_NUMBER() OVER (
+                PARTITION BY quote_name
+                ORDER BY last_date_at DESC
+            ) AS rn
+        FROM quotes_price
+    ) qp ON qp.quote_name = q.quote_name
+    GROUP BY q.id, q.quote_name;
     """
 
     cur.execute(stmt)
@@ -476,8 +487,9 @@ def all_symbols():
     cur.close()
 
     new_data = [
-    (number, name, 'used', close_price, last_date_at) if is_symbol_in_any_portfolio(name) else ( number, name, 'not_used', close_price, last_date_at )
-     for  number, name, close_price, last_date_at in data
+    (number, name, 'used', close_price, last_date_at, prev_to_last_close_price, prev_to_last_date_at)
+        if is_symbol_in_any_portfolio(name) else ( number, name, 'not_used', close_price, last_date_at , prev_to_last_close_price, prev_to_last_date_at)
+     for  number, name, close_price, last_date_at, prev_to_last_close_price, prev_to_last_date_at in data
     ]
     return new_data
 
@@ -559,7 +571,6 @@ def update_quote_prices(data, for_day):
         updated_at = VALUES(updated_at);
     """
     print(stmt)
-
     try:
       cur.execute(stmt)
       conn.commit()

@@ -459,18 +459,23 @@ def all_symbols():
     cur = conn.cursor()
 
     stmt = """
-       SELECT Q.id, Q.quote_name,
-       COALESCE(QP.close_price, 0.0) AS close_price,
-       COALESCE(TO_CHAR(QP.last_date_at, 'YYYY-MM-DD'), '') AS last_date_at
-    FROM quotes Q
-        LEFT JOIN LATERAL(
-            SELECT QP.*
-            FROM  quotes_price QP
-            WHERE Q.quote_name=QP.quote_name
-            ORDER BY QP.quote_name, QP.last_date_at DESC
-            LIMIT 1
-
-        )QP on TRUE
+        SELECT
+        q.id,
+        q.quote_name,
+        COALESCE(MAX(qp.close_price) FILTER (WHERE rn = 1), 0) AS close_price,
+        COALESCE(to_char(MAX(qp.last_date_at) FILTER (WHERE rn = 1), 'YYYY-MM-DD'), '') AS last_date_at,
+        COALESCE(MAX(qp.close_price) FILTER (WHERE rn = 2), 0) AS prev_to_last_close_price,
+        COALESCE(to_char(MAX(qp.last_date_at) FILTER (WHERE rn = 2), 'YYYY-MM-DD'), '') AS prev_to_last_date_at
+    FROM quotes q
+    LEFT JOIN (
+    SELECT *,
+           row_number() OVER (
+               PARTITION BY quote_name
+               ORDER BY last_date_at DESC
+           ) rn
+    FROM quotes_price
+    ) qp ON qp.quote_name = q.quote_name
+    GROUP BY q.id, q.quote_name;
     """
     print (stmt)
 
@@ -479,8 +484,9 @@ def all_symbols():
     cur.close()
 
     new_data = [
-    (number, name, 'used', close_price, last_date_at) if is_symbol_in_any_portfolio(name) else ( number, name, 'not_used', close_price, last_date_at )
-     for  number, name, close_price, last_date_at in data
+    (number, name, 'used', close_price, last_date_at, prev_to_last_close_price, prev_to_last_date_at)
+        if is_symbol_in_any_portfolio(name) else ( number, name, 'not_used', close_price, last_date_at , prev_to_last_close_price, prev_to_last_date_at)
+     for  number, name, close_price, last_date_at, prev_to_last_close_price, prev_to_last_date_at in data
     ]
     return new_data
 
