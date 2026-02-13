@@ -22,7 +22,8 @@
         case 'symbol':
           $('#edit_symbol').html($(item).html()); console.log($(item).html()); break;
         case 'price':
-          price = $(item).html();  $('#edit_price').val($(item).html()); console.log(price); break;
+          $('#edit_price').val($(item).attr('price'));console.log($(item).attr('price')); break;
+          break;
         case 'quantity':
           quantity = $(item).html(); $('#edit_quantity').val($(item).html()); console.log(quantity); break;
         case 'from_month':
@@ -210,7 +211,7 @@
           <tr id="rowid-{{ entry[0]}}" >
             <td class="quoteid">{{ entry[0]}}</td>
             <td class="symbol">{{ entry[1] }}</td>
-            <td class="price" title={{entry[11]}}({{entry[12]}})><div> {{ entry[2] }} </div> <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
+            <td class="price" title={{entry[11]}}({{entry[12]}}) price="{{ entry[2] }}"><div> {{ entry[2] }} </div> <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
             <td class="quantity">{{ entry[3]}}</td>
             <td class="ss"> ( {{entry[8]}}) </td>
             <td class="ss">{{ entry[4] }} {{total}}</td>
