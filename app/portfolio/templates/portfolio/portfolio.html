@@ -14,31 +14,74 @@
       e.preventDefault();
     }
   }
+
+  function rename(id, name){
+      $.ajax({
+        url: "/renameportfolio",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ id: id, name: name }),
+        success: function (response){
+            if(response.status == "success"){
+              console.log(response.status);
+            }
+         }
+      });
+      event.preventDefault();
+    }
+
+  $(document).ready(function(){
+
+      $('.p_name').on('focusout', function (){
+        if ( $(this).val() !=  $(this).data('oldname'))
+          rename($(this).data('pid'), $(this).val() );
+          $(this).attr('readonly', 'readonly');
+      });
+
+      $('.p_name').on('focus', function (){
+         console.log('focus');
+         $(this).removeAttr('readonly');
+      });
+    }
+  );
+
+  document.getElementById("togglePassword").addEventListener("click", function () {
+        const pwdField = document.getElementById("password");
+        if (pwdField.type === "password") {
+            pwdField.type = "text";
+            this.classList.remove("fa-eye");
+            this.classList.add("fa-eye-slash");
+        } else {
+            pwdField.type = "password";
+            this.classList.remove("fa-eye-slash");
+            this.classList.add("fa-eye");
+        }
+    });
 </script>
   <div class="container mt-5">
     <div class="d-flex justify-content-center">
       <h2>  Portfolios ({{user_name}})</h2>
     </div>
   <div  class="center">
-  <table id = "data" class="center">
-    <thead>
-      <tr>
+    <table id = "data" class="center">
+     <thead>
+        <tr>
         <th>Id</th>
         <th>Portfolio Name</th>
         <th> &nbsp; </th>
         <th> &nbsp;  </th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in portfolio %}
-        <tr>
-          <td>{{ entry[0]}}</td>
-          <td>{{ entry[1] }}</td>
-          <td><a href="/quotes/{{ entry[0]}}/{{for_year}}" > To Quotes - {{for_year}} Year</a></td>
-          <td><a href="/delete_portfolio/{{ entry[0]}}"  onclick="allow_portfolio_deletion(event, '{{ entry[1] }}')" title="Delete Portfolio"><i class="bi bi-trash text-danger" ></i></a></td>
         </tr>
-      {% endfor %}
-    </tbody>
+      </thead>
+      <tbody>
+        {% for entry in portfolio %}
+          <tr>
+            <td>{{ entry[0]}}</td>
+            <td><div class="input-wrapper"> <input type="text" value="{{ entry[1] }}"  class="p_name form-control editable-input" data-oldname="{{ entry[1] }}"  data-pid="{{ entry[0]}}" readonly> <i class="bi bi-pencil-fill edit-icon"></i></div></td>
+            <td> &nbsp;&nbsp; <a href="/quotes/{{ entry[0]}}/{{for_year}}"> To Quotes - {{for_year}} Year <i class="bi bi-briefcase"></i></a></td>
+            <td>&nbsp;&nbsp;<a href="/delete_portfolio/{{ entry[0]}}"  onclick="allow_portfolio_deletion(event, '{{ entry[1] }}')" title="Delete Portfolio"><i class="bi bi-trash text-danger" ></i></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
     <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()">
        <i class="bi bi-plus-circle"></i> Create New Portfolio

@@ -159,8 +159,8 @@
         }
         else
         {
-              $('#symbol_buy_info').attr('style','display:block');
-              console.log("Symbol is valid:", value);
+          $('#symbol_buy_info').attr('style','display:block');
+          console.log("Symbol is valid:", value);
         }
 
       event.preventDefault();
@@ -317,7 +317,7 @@
       <div onclick="AddNewQuoteCount(0)" class="close-btn">
           &times
       </div>
-      <h5>Add Quote Info</h5>
+      <h5>Add Quotes Count</h5>
 
           <form method="post" action="/addquote">
             <input type="hidden" name="portfolioid" value="{{ portfolioid }}">

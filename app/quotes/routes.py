@@ -51,7 +51,11 @@ def addquote_to_portfolio():
     else:
         err = "Invalid quotes parameters"
 
+    return redirect(url_for('quotes.quotes', portfolioid=portfolio_id, calcyear=from_year, err=err))
 
+@quotes_bp.route('/reducecnt', methods=['POST'] )
+def reducequotecnt_to_portfolio():
+    ## call to addquote_to_portfolio()
     return redirect(url_for('quotes.quotes', portfolioid=portfolio_id, calcyear=from_year, err=err))
 
 @quotes_bp.route('/deletequote/<int:portfolioid>/<int:quoteid>', methods=['POST', 'GET'] )

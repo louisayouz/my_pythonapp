@@ -41,18 +41,24 @@ def save_new_user(username, userpass):
         return False
 
     pass_hash = bcrypt.hashpw(userpass.encode("utf-8"), bcrypt.gensalt())
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("INSERT INTO users (username, password, password_hash) VALUES(%s, %s, %s)", (username, userpass, pass_hash))
-    conn.commit()
-    cur.close()
-    return True
+    res = True
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO users (username, password, password_hash) VALUES(%s, %s, %s)", (username, userpass, pass_hash))
+        conn.commit()
+    except mysql.connector.Error as e:
+        print("SQL error:", e)
+        res = False
+    finally:
+        cur.close()
+    return res
 
 def portfolio_data(user_id):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute("SELECT id, portfolio_name FROM portfolios WHERE user_id = %s", (user_id,))
+    cur.execute("SELECT id, portfolio_name FROM portfolios WHERE user_id = %s ORDER BY id", (user_id,))
     data = cur.fetchall()
     cur.close()
     return data
@@ -81,6 +87,13 @@ def delete_portfolio(user_id, portfolio_id):
     cur.close()
     return True
 
+def rename_portfolio(user_id, portfolio_id, portfolio_name):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    res = cur.execute("UPDATE portfolios SET portfolio_name=%s WHERE user_id=%s AND id=%s", ( portfolio_name, user_id, portfolio_id,))
+    conn.commit()
+    cur.close()
+    return True
 
 def portfolio_quotes(portfolio_id, calc_year=None):
     conn = get_db_connection()
@@ -481,7 +494,6 @@ def all_symbols():
     ) qp ON qp.quote_name = q.quote_name
     GROUP BY q.id, q.quote_name;
     """
-
     cur.execute(stmt)
     data = cur.fetchall()
     cur.close()

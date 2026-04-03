@@ -158,3 +158,33 @@
   font-size: 12px;
   font-weight: 700;
 }
+.input-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 210px; /* optional */
+}
+
+.editable-input {
+  padding-right: 30px; /* space for icon */
+}
+
+.edit-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  color: #6c757d; /* Bootstrap gray */
+}
+
+/* show icon on focus
+.input-wrapper:focus-within .edit-icon {
+  opacity: 1;
+}
+*/
+
+.input-wrapper:hover .edit-icon {
+  opacity: 0.6;
+}

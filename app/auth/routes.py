@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, session, redirect, url_for
+from flask import Blueprint, render_template, request, session, redirect, url_for, jsonify
 from app.helpers.db import get_user_by_username, save_new_user
 import os
 import bcrypt
@@ -25,7 +25,6 @@ def login():
             hashed = user[3]
             #if db_psql:
             #    hashed = user[3].tobytes()
-
             valid = bcrypt.checkpw(password.encode("utf-8"), hashed)
 
         if valid:
@@ -38,16 +37,25 @@ def login():
     return render_template('auth/login.html', result="")
 
 
-@auth_bp.route('/save_new_user/<string:name>/<string:ps>', methods=['GET'])
-def create_new_user(name, ps):
-    msg = f"New user created!"
+@auth_bp.route('/save_new_user', methods=['POST'])
+def create_new_user():
+    data = request.get_json()
+    name = data.get("username")
+    ps = data.get("password")
+
     if session['username'] == 'admin':
-        save_new_user(name, ps)
+       ret = save_new_user(name, ps)
+
+    if ret:
+        msg = f"User created successfully."
+        res = "success"
     else:
-        msg = f"You have not authorities to create new user!"
+        res = "failed"
+        msg = f"User not created!"
 
-    return render_template('dashboard.html', username=session['username'], msg=msg)
+    print(res, msg)
 
+    return jsonify({"status": res, "msg": msg})
 
 @auth_bp.route('/logout')
 def logout():
