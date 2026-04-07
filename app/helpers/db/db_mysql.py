@@ -579,9 +579,10 @@ def update_quote_prices(data, for_day):
     INSERT INTO quotes_price (quote_name, close_price, last_date_at, created_at, updated_at)
     VALUES {values}
     ON DUPLICATE KEY UPDATE
-        close_price = VALUES(close_price),
+        close_price = IF(VALUES(close_price) <> 0, VALUES(close_price), close_price),
         updated_at = VALUES(updated_at);
     """
+
     print(stmt)
     try:
       cur.execute(stmt)

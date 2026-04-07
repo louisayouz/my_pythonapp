@@ -580,7 +580,7 @@ def update_quote_prices(data, for_day):
     ON CONFLICT (quote_name, last_date_at) DO UPDATE
     SET close_price = EXCLUDED.close_price,
         quote_name = EXCLUDED.quote_name,
-        updated_at = EXCLUDED.updated_at;
+        updated_at = EXCLUDED.updated_at WHERE EXCLUDED.close_price <> 0;
     """
 
     try:
