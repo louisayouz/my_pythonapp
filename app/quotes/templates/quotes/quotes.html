@@ -190,7 +190,7 @@
     {% set ns = namespace(total=0) %}
     {% set nsc = namespace(total_cur=0) %}
     {% set nns = namespace(divtotal=0) %}
-    <table id="data" class="table table-striped">
+    <table id="data" class="table table-striped table-responsive">
       <thead>
         <tr>
           <th> Id</th>
@@ -211,7 +211,9 @@
           <tr id="rowid-{{ entry[0]}}" >
             <td class="quoteid">{{ entry[0]}}</td>
             <td class="symbol">{{ entry[1] }}</td>
-            <td class="price" title={{entry[11]}}({{entry[12]}}) price="{{ entry[2] }}"><div> {{ entry[2] }} </div> <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
+            <td class="price" title={{entry[11]}}({{entry[12]}}) price="{{ entry[2] }}">
+                <div class="price_in_div"> {{ entry[2] }} </div>
+                <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
             <td class="quantity">{{ entry[3]}}</td>
             <td class="ss"> ( {{entry[8]}}) </td>
             <td class="ss">{{ entry[4] }} {{total}}</td>

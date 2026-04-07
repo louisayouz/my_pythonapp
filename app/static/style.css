@@ -1,3 +1,8 @@
+  @media (max-width: 768px) {
+    #data {
+      font-size: 12px;
+    }
+  }
   .center {
     margin-left: auto;
     margin-right: auto;
@@ -144,18 +149,18 @@
 .sub-row{
   font-style: italic;
   color: #000;
-  font-size: 12px;
+  font-size: 11px;
 }
 .sub-row-red {
   font-style: italic;
   color: #630606;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 .sub-row-gr {
   font-style: italic;
   color: #1f9855;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 .input-wrapper {
@@ -163,7 +168,9 @@
   display: inline-block;
   width: 210px; /* optional */
 }
-
+.price_in_div {
+  white-space: nowrap;
+}
 .editable-input {
   padding-right: 30px; /* space for icon */
 }
