@@ -12,44 +12,38 @@
   }
 
   function editQuotePopup(rowid) {
+    debugger;
     tds = $("#rowid-"+rowid).find('td')
 
     tds.each(function(idx, item){
       cls = $(item).attr('class');
       switch (cls){
-        case 'quoteid':
-          quoteid = $(item).html(); $('#edit_quoteid').val($(item).html()); console.log(quoteid); break;
         case 'symbol':
-          $('#edit_symbol').html($(item).html()); console.log($(item).html()); break;
+          $('#edit_symbol').html($(item).data('symbol'));
+          $('#edit_quoteid').val($(item).data('quoteid'));
         case 'price':
           $('#edit_price').val($(item).attr('price'));console.log($(item).attr('price')); break;
           break;
         case 'quantity':
-          quantity = $(item).html(); $('#edit_quantity').val($(item).html()); console.log(quantity); break;
+          quantity = $(item).data('qnt'); $('#edit_quantity').val(quantity); console.log(quantity); break;
         case 'from_month':
           from_month = $(item).html(); $('#edit_from_month').val($(item).html()); console.log(from_month); break;
         case 'to_month':
           to_month = $(item).html(); $('#edit_to_month').val($(item).html()); console.log(to_month); break;
       }
     });
-    $(".content_edit").toggle();
+
+   const modal = new bootstrap.Modal(document.getElementById('editModal'));
+   modal.show();
   }
 
-  function AddNewQuoteCount(rowid=0) {
+  function AddNewQuoteCount(rowid) {
     let tooltip = $('#tooltip_add');
-    if (rowid == 0 ) {
-      tooltip.text("");
-      tooltip.attr("style", "display:none");
-      $(".content_add_block").attr("style", "display:none");
-      $(".content_add").toggle();
-      return;
-    }
-
     tds = $("#rowid-"+rowid).find('td')
     tomonthObj = $("#rowid-"+rowid).find('.to_month');
 
     if ($(tomonthObj).html().trim().length == 0){
-      tooltip.text("Set 'To month' value and click on 'Add' again.");
+      tooltip.text("'To month' value is empty! Edit 'To month' value and click on 'Add' again.");
       tooltip.attr("style", "display:inline-block");
       $(".content_add_block").attr("style", "display:none");
     }
@@ -63,15 +57,15 @@
       tds.each(function(idx, item){
         cls = $(item).attr('class');
         switch (cls){
-          case 'quoteid':
-            quoteid = $(item).html(); $('#add_quoteid').val($(item).html()); console.log(quoteid); break;
           case 'symbol':
-            $('#add_symbol').html($(item).html());
-            $('#addsymbol').val($(item).html()); console.log($(item).html()); break;
+            $('#add_quoteid').val($(item).data('quoteid'));
+            $('#add_symbol').html($(item).data('symbol'));
+            $('#addsymbol').val($(item).data('symbol'));
           case 'price':
             price = $(item).html();  $('add_price').val($(item).html()); console.log(price); break;
           case 'quantity':
-            quantity = $(item).html(); $('#add_quantity').val($(item).html()); console.log(quantity); break;
+            quantity = $(item).data('qnt');
+            $('#add_quantity').val(quantity); console.log(quantity); break;
           case 'from_month':
             var to_month_obj = $("#rowid-"+rowid).find('.to_month');
             var from_month = parseInt($(to_month_obj).html()) +1;
@@ -83,16 +77,20 @@
         }
       });
     }
-      $(".content_add").toggle();
+
+      const modal = new bootstrap.Modal(document.getElementById('addModal'));
+      modal.show();
     }
 
     function ShowDividends(quote='', foryear=0, frommonth=0, tomonth=0){
 
        $('#tableContainer').empty();
        if (quote != ''){
-         getDivReq(quote, foryear, frommonth, tomonth );
+          getDivReq(quote, foryear, frommonth, tomonth );
        }
-      $(".dividendlist").toggle();
+
+      const modal = new bootstrap.Modal(document.getElementById('dividendlist'));
+      modal.show();
     }
 
   function getDivReq(quote, foryear, frommonth, tomonth ){
@@ -165,7 +163,6 @@
 
       event.preventDefault();
     });
-
   });  //document ready
 
 
@@ -185,19 +182,17 @@
 
   <!-- your quotes in portfolio  here {{quotes}} -->
 
-
-   <h2> Quotes in Portfolio (user:{{user_name}} {{for_year}} year) </h2>
+   <h2> {{ portfolio_name }} (user:{{user_name}} {{for_year}} year) </h2>
     {% set ns = namespace(total=0) %}
     {% set nsc = namespace(total_cur=0) %}
     {% set nns = namespace(divtotal=0) %}
     <table id="data" class="table table-striped table-responsive">
       <thead>
         <tr>
-          <th> Id</th>
+          <!---<th> Id</th>--->
           <th> Symbol</th>
           <th> Buying Price</br><i>Closed Price</i> </th>
-          <th> Buying Qty </th>
-          <th> Current  Qty</th>
+          <th> Buying Qty</br><i>Current Qty</i> </th>
           <th> Cost </th>
           <th> From </br> Month</th>
           <th> To </br> Month</th>
@@ -209,14 +204,39 @@
       <tbody>
         {% for entry in quotes %}
           <tr id="rowid-{{ entry[0]}}" >
-            <td class="quoteid">{{ entry[0]}}</td>
-            <td class="symbol">{{ entry[1] }}</td>
+            <td class="symbol" data-symbol="{{ entry[1] }}" data-quoteid="{{ entry[0]}}">
+              {{ entry[1] }}
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="editQuotePopup('{{ entry[0]}}')">
+                    <i class="bi bi-pencil"></i>
+                </button>
+
+                <button class="btn btn-sm btn-outline-danger" onclick="location.href='/deletequote/{{ portfolioid }}/{{ entry[0] }}'">
+                  <i class="bi bi-trash"></i>
+                </button>
+
+                <!---<a href="{{ url_for('quotes.delete_quote_to_portfolio', portfolioid=portfolioid, quoteid=entry[0]) }}" title="Delete"><i class="bi bi-trash text-danger" ></i></a>
+                &nbsp;
+                --->
+                {% if entry[10] == 'add' %}
+                <button class="btn btn-sm btn-outline-success" onclick="AddNewQuoteCount('{{ entry[0]}}')">
+                  <i class="bi bi-plus-circle"></i>
+                </button>
+                {% endif %}
+              </div>
+            </td>
+
             <td class="price" title={{entry[11]}}({{entry[12]}}) price="{{ entry[2] }}">
                 <div class="price_in_div"> {{ entry[2] }} </div>
                 <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
-            <td class="quantity">{{ entry[3]}}</td>
-            <td class="ss"> ( {{entry[8]}}) </td>
-            <td class="ss">{{ entry[4] }} {{total}}</td>
+
+            <td class="quantity" data-qnt="{{ entry[3]}}">
+              <div>{{ entry[3]}}</div>
+              <div class="sub-row">( {{entry[8]}})</div>
+            </td>
+
+            <td>{{ entry[4] }} {{total}}</td>
 
             <!--- the year is same for showing -->
             <td class="from_month">{{ entry[6]}}</td>
@@ -232,21 +252,6 @@
               <a href="/quotedividents/{{ entry[1] }}"  title="To All Dividends"><i class="bi bi-fan text-primary"></i></a></td>
             {% endif %}
             </td>
-            <td>
-              <a href="#" onclick="editQuotePopup( '{{ entry[0]}}' )" title="Edit"><i class="bi bi-pencil text-primary"></i></a>&nbsp;
-
-            <!---<a href="/deletequote/{{ portfolioid}}/{{ entry[0]}}" title="Delete">
-              <i class="bi bi-trash"></i>
-            </a>&nbsp;
-            ---->
-
-            <a href="{{ url_for('quotes.delete_quote_to_portfolio', portfolioid=portfolioid, quoteid=entry[0]) }}" title="Delete"><i class="bi bi-trash text-danger" ></i></a>
-            &nbsp;
-
-            {% if entry[10] == 'add' %}
-            <a href="#" onclick="AddNewQuoteCount( '{{ entry[0]}}')" title="Add"><i class="bi-plus-circle text-success"></i></a>
-            &nbsp;
-             {% endif %}
           </tr>
 
           {% set ns.total = ns.total + entry[4] %}
@@ -271,7 +276,7 @@
       <div onclick="togglePopup()" class="close-btn">
           &times
       </div>
-      <h5>Add New Quote to Portfoliio</h5>
+      <h5>Add New Quote to Portfolio</h5>
         <form method="post" action="/addquote" id="togglePopup">
 
           <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
@@ -279,7 +284,7 @@
           <span  id="tooltip" class="tooltip-message" style="display:none;"></span>
 
 
-          <div style="display:none" id="symbol_buy_info"">
+          <div style="display:none" id="symbol_buy_info">
           Buy Price: <input type="text" name="price" class="form_input_field" onkeypress="return ( (event.charCode>=48 && event.charCode<=57) || event.charCode === 46)">
           Quantity: <input type="text" name="quantity" class="form_input_field" onkeypress="return event.charCode>=48 && event.charCode<=57" ><br>
           From Year: <input type="text" name="from_year"class="form_input_field" onkeypress="return event.charCode>=48 && event.charCode<=57" >
@@ -292,63 +297,88 @@
     </div>
 
 
-    <div class="content_edit">
-      <div onclick="editQuotePopup()" class="close-btn">
-          &times
-      </div>
-      <h5>Edit Quote</h5>
-        <form method="post" action="/editquote" >
-          <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
-          <input type="hidden" name="quoteid" id="edit_quoteid">
-          <input type="text" name="from_year" value="{{ for_year}}" hidden >
-          <input type="text" name="to_year" value="{{ for_year}}" hidden >
 
-          Symbol (quote) Name: <span id='edit_symbol'></span> <br>
-          Buy Price: <input id='edit_price' type="text" name="price" class="form_input_field">
-          Quantity: <input  id='edit_quantity'type="text" name="quantity" class="form_input_field"> <br>
-          From Year:<span> <b>{{ for_year}} </b></span>
-          From Month:<input type="text" name="from_month" id="edit_from_month" class="form_input_field" maxlength="2"><br>
-          To Year: <span><b>{{ for_year}}</b></span>
-          To Month: <input type="text" name="to_month" id="edit_to_month" class="form_input_field" maxlength="2"><br>
+    <div class="modal fade" id="editModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-content p-3">
 
-          <button type="submit" class="btn btn-primary mt-3">Execute Edit</button>
-        </form>
-    </div>
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Quote</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
 
-    <div class="content_add">
-      <div onclick="AddNewQuoteCount(0)" class="close-btn">
-          &times
-      </div>
-      <h5>Add Quotes Count</h5>
+          <div class="modal-body">
+            <form method="post" action="/editquote" >
+              <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
+              <input type="hidden" name="quoteid" id="edit_quoteid">
+              <input type="text" name="from_year" value="{{ for_year}}" hidden >
+              <input type="text" name="to_year" value="{{ for_year}}" hidden >
 
-          <form method="post" action="/addquote">
-            <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
-            <input type="hidden" name="symbol" id="addsymbol" >
-            <input type="text" name="from_year" value="{{ for_year}}" hidden >
-            <input type="text" name="to_year" value="{{ for_year}}" hidden >
-
-            <span  id="tooltip_add" class="tooltip-message" style="display:none;"></span>
-            <div class="content_add_block">
-              Symbol (quote) Name: <span id='add_symbol'></span> <br>
-              Buy Price: <input id='add_price' type="text" name="price" class="form_input_field">
-              Quantity: <input  id='add_quantity'type="text" name="quantity" class="form_input_field"> <br>
+              Symbol (quote) Name: <span id='edit_symbol'></span> <br>
+              <div>
+              Buy Price: <input id='edit_price' type="text" name="price" class="form_input_field">
+              Qnt:  <input  id='edit_quantity' type="text" name="quantity" class="form_input_field" maxlength="6" size="7"> <br>
+              </div>
               From Year:<span> <b>{{ for_year}} </b></span>
-              From Month:<input type="text" name="from_month" id="add_from_month" class="form_input_field" maxlength="2"><br>
+              From Month:<input type="text" name="from_month" id="edit_from_month" class="form_input_field" maxlength="2"><br>
               To Year: <span><b>{{ for_year}}</b></span>
-              To Month: <input type="text" name="to_month" id="add_to_month" class="form_input_field" maxlength="2"><br>
+              To Month: <input type="text" name="to_month" id="edit_to_month" class="form_input_field" maxlength="2"><br>
 
-              <button type="submit" class="btn btn-primary mt-3">Add Quote</button>
-            </div>
-          </form>
+              <button type="submit" class="btn btn-primary mt-3">Execute Edit</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <div class="modal fade" id="dividendlist" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-content p-3">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Payments list:</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body" id="tableContainer">
+            <!--- dividends list here -->
+          </div>
+        </div>
+      </div>
     </div>
 
 
-    <div class="dividendlist">
-      <div onclick="ShowDividends()" class="close-btn">
-        &times
+    <div class="modal fade" id="addModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-content p-3">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Change Quote Number:</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body" id="tableContainer">
+            <form method="post" action="/addquote">
+              <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
+              <input type="hidden" name="symbol" id="addsymbol" >
+              <input type="text" name="from_year" value="{{ for_year}}" hidden >
+              <input type="text" name="to_year" value="{{ for_year}}" hidden >
+
+              <span  id="tooltip_add" class="tooltip-message" style="display:none;"></span>
+              <div class="content_add_block">
+                Symbol (quote) Name: <span id='add_symbol'></span> <br>
+                Buy Price: <input id='add_price' type="text" name="price" class="form_input_field">
+                Qnt: <input  id='add_quantity'type="text" name="quantity" class="form_input_field" maxlength="6" size="7"> <br>
+                From Year:<span> <b>{{ for_year}} </b></span>
+                From Month:<input type="text" name="from_month" id="add_from_month" class="form_input_field" maxlength="2"><br>
+                To Year: <span><b>{{ for_year}}</b></span>
+                To Month: <input type="text" name="to_month" id="add_to_month" class="form_input_field" maxlength="2"><br>
+
+                <button type="submit" class="btn btn-primary mt-3">Add Quote</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
-      <h8>Payments list: &nbsp;</h8>
-      <div id="tableContainer"></div>
     </div>
     {% endblock %}

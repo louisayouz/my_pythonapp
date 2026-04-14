@@ -6,15 +6,21 @@
 {% block content %}
   <script type="text/javascript">
     function onclose_popup(){
-      $("#define_new_user_btn").show();
+      const modal = new bootstrap.Modal(document.getElementById('addNewUser'));
+      modal.hide();
+     // $("#define_new_user_btn").show();
     }
 
     function onopen_popup(){
+
       $('#name').val('')
       $('#ps').val('')
       $('#msg').text('');
 
-      $("#define_new_user_btn").hide();
+    //# $("#define_new_user_btn").hide();
+
+      const modal = new bootstrap.Modal(document.getElementById('addNewUser'));
+      modal.show();
     }
 
     function createUser(){
@@ -25,11 +31,7 @@
         contentType: "application/json",
         data: JSON.stringify({ username: $('#name').val(), password: $('#ps').val() }),
         success: function (response){
-
-            if(response.status == "success"){
-              onclose_popup();
-              togglePopup();
-            }
+            response.status == "success"
             console.log(response.status);
             console.log(response.msg);
             $('#msg').text(response.msg);
@@ -52,25 +54,32 @@
   <p> &nbsp;&nbsp; (month without dividend should stay with 0.0 price value)</p>
 
   {% if username == 'admin' %}
-  <p><button id='define_new_user_btn' class="btn btn-primary w-25 mt-3" onclick="onopen_popup();togglePopup()">Add New User</button></p>
-  <div class="content">
-      <div class="card p-3">
-        <div onclick="onclose_popup();togglePopup()" class="close-btn">
-          &times;
-        </div>
-        <form>
-          <div class="d-flex justify-content-center"><b>Enter New User Credentionals</b></div>
-            <label for="name" class="form-label mb-1">User Name:</label>
-            <input type="text" class="form-control mb-2 " style="background-color:#eef4fa !important;" autocomplete="off" id="name" placeholder="enter user name" required><br>
-            <label for="ps" class="form-label mb-1">Password:</label>
-            <input type="password" class="form-control mb-2" style="background-color:#eef4fa !important;" id="ps"   autocomplete="new-password" placeholder="enter user password" required><br>
-            <span id="msg"></span>
-          <div>
+  <p><button id='define_new_user_btn' class="btn btn-primary w-25 mt-3" onclick="onopen_popup();">Add New User</button></p>
 
-          <button onclick="createUser();" class="btn btn-primary">Create User</button>
-          <button onclick="onclose_popup(); togglePopup();" class="btn btn-secondary">Close</button>
-        </form>
+  <div class="modal fade" id="addNewUser" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" >
+      <div class="modal-content p-3">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Enter New User Credentionals:</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="onclose_popup()"></button>
+        </div>
+
+        <div class="modal-body">
+          <form>
+            <div class="d-flex justify-content-center"></div>
+              <label for="name" class="form-label mb-1">User Name:</label>
+              <input type="text" class="form-control mb-2 " style="background-color:#eef4fa !important;" autocomplete="off" id="name" placeholder="enter user name" required><br>
+              <label for="ps" class="form-label mb-1">Password:</label>
+              <input type="password" class="form-control mb-2" style="background-color:#eef4fa !important;" id="ps"   autocomplete="new-password" placeholder="enter user password" required><br>
+              <span id="msg"></span>
+            <div>
+
+            <button onclick="createUser();" class="btn btn-primary">Create User</button>
+          </form>
+        </div>
       </div>
+    </div>
   </div>
 
   {% endif %}

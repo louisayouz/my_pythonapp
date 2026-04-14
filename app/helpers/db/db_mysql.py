@@ -54,6 +54,15 @@ def save_new_user(username, userpass):
         cur.close()
     return res
 
+def get_p_name(user_id, p_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT portfolio_name FROM portfolios WHERE user_id = %s AND id= %s LIMIT 1", (user_id, p_id))
+    data = cur.fetchone()
+    cur.close()
+    return data[0]
+
 def portfolio_data(user_id):
     conn = get_db_connection()
     cur = conn.cursor()

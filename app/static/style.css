@@ -45,6 +45,7 @@
     display: none;
     /*to hide popup initially*/
   }
+  /*
   .content_edit {
     position: absolute;
     top: 50%;
@@ -59,8 +60,38 @@
     z-index: 100;
     border-radius: 25px;
     display: none;
-    /*to hide popup initially*/
 }
+*/
+
+.content_edit {
+  position: fixed; /* important */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 90%;
+  max-width: 500px;
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background-color: #e2e6e9;
+  padding: 15px;
+  z-index: 1000;
+  border-radius: 15px;
+
+  display: none;
+}
+
+ .modal-content {
+  background-color: #e2e6e9;
+  border-radius: 15px;
+  border: none; /* optional: removes Bootstrap border */
+  border-bottom: none;
+  padding-top: 0;
+}
+
+
 .content_add {
     position: absolute;
     top: 50%;
