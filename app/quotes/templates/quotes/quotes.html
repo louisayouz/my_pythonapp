@@ -3,140 +3,12 @@
 {% block title %}Quotes{% endblock %}
 
 {% block content %}
-<script type="text/javascript">
-  // Function to show and hide the popup
-  function isNumberOnlyInput(event) {
-    if (!parseInt(event.key) && event.key != 'Backspace') {
-        event.preventDefault();
-    }
-  }
 
-  function editQuotePopup(rowid) {
-    debugger;
-    tds = $("#rowid-"+rowid).find('td')
-
-    tds.each(function(idx, item){
-      cls = $(item).attr('class');
-      switch (cls){
-        case 'symbol':
-          $('#edit_symbol').html($(item).data('symbol'));
-          $('#edit_quoteid').val($(item).data('quoteid'));
-        case 'price':
-          $('#edit_price').val($(item).attr('price'));console.log($(item).attr('price')); break;
-          break;
-        case 'quantity':
-          quantity = $(item).data('qnt'); $('#edit_quantity').val(quantity); console.log(quantity); break;
-        case 'from_month':
-          from_month = $(item).html(); $('#edit_from_month').val($(item).html()); console.log(from_month); break;
-        case 'to_month':
-          to_month = $(item).html(); $('#edit_to_month').val($(item).html()); console.log(to_month); break;
-      }
-    });
-
-   const modal = new bootstrap.Modal(document.getElementById('editModal'));
-   modal.show();
-  }
-
-  function AddNewQuoteCount(rowid) {
-    let tooltip = $('#tooltip_add');
-    tds = $("#rowid-"+rowid).find('td')
-    tomonthObj = $("#rowid-"+rowid).find('.to_month');
-
-    if ($(tomonthObj).html().trim().length == 0){
-      tooltip.text("'To month' value is empty! Edit 'To month' value and click on 'Add' again.");
-      tooltip.attr("style", "display:inline-block");
-      $(".content_add_block").attr("style", "display:none");
-    }
-    else {
-
-      tooltip.text("");
-      tooltip.attr("style", "display:none");
-
-      $(".content_add_block").attr("style", "display:block");
-
-      tds.each(function(idx, item){
-        cls = $(item).attr('class');
-        switch (cls){
-          case 'symbol':
-            $('#add_quoteid').val($(item).data('quoteid'));
-            $('#add_symbol').html($(item).data('symbol'));
-            $('#addsymbol').val($(item).data('symbol'));
-          case 'price':
-            price = $(item).html();  $('add_price').val($(item).html()); console.log(price); break;
-          case 'quantity':
-            quantity = $(item).data('qnt');
-            $('#add_quantity').val(quantity); console.log(quantity); break;
-          case 'from_month':
-            var to_month_obj = $("#rowid-"+rowid).find('.to_month');
-            var from_month = parseInt($(to_month_obj).html()) +1;
-            $('#add_from_month').val(from_month); console.log(from_month); break;
-
-          case 'to_month':
-            var to_month = 12;
-            $('#add_to_month').val(to_month); console.log(to_month); break;
-        }
-      });
-    }
-
-      const modal = new bootstrap.Modal(document.getElementById('addModal'));
-      modal.show();
-    }
-
-    function ShowDividends(quote='', foryear=0, frommonth=0, tomonth=0){
-
-       $('#tableContainer').empty();
-       if (quote != ''){
-          getDivReq(quote, foryear, frommonth, tomonth );
-       }
-
-      const modal = new bootstrap.Modal(document.getElementById('dividendlist'));
-      modal.show();
-    }
-
-  function getDivReq(quote, foryear, frommonth, tomonth ){
-    $.ajax({
-      url: "/getquotedivs/"+quote+"/"+foryear+"/"+frommonth+"/"+tomonth,
-      method: "GET",
-      success: function (response) {
-
-        console.log("ajax Fetched data:", response);
-
-        fillDivTable(response);
-
-      },
-      error: function () {
-        console.log("Failed to fetch data");
-      }});
-  };
-
-  function fillDivTable(data){
-      var table = $('<table class="table">');
-      // Create header
-      var thead = $('<thead>');
-      var headerRow = $('<tr>');
-      headerRow.append('<th>Month</th>');
-      headerRow.append('<th>Price</th>');
-      thead.append(headerRow);
-      table.append(thead);
-
-      // Create body
-      var tbody = $('<tbody>');
-      $.each(data, function(index, item) {
-        var row = $('<tr>');
-        row.append('<td>' + item.month + '</td>');
-        row.append('<td>' + item.price + '</td>');
-        tbody.append(row);
-      });
-      table.append(tbody);
-
-      // Append table to container
-      $('#tableContainer').append(table);
-  }
-
+{% include 'quotes/quotes_js.js' %}
+<script>
   $(document).ready(function(){
 
     $('#symbolInPortfolio').on('blur', function (){
-
       let value = $(this).val().trim();
       let tooltip = $('#tooltip');
 
@@ -151,7 +23,7 @@
       else
         if ({{ symbols | tojson }}.includes(value.toUpperCase()))
         {
-          $('#togglePopup #symbolInPortfolio').focus();
+          $('#addNewQuoteModalForm #symbolInPortfolio').focus();
           tooltip.text("Symbol already exists in prorfolio. Please click on 'Add' link  on row with same Quote.");
           tooltip.attr("style", "display:inline-block");
         }
@@ -163,21 +35,8 @@
 
       event.preventDefault();
     });
-  });  //document ready
+  })  //document ready
 
-
-  function copyQuotes(){
-    $.ajax({
-      url: "/copy_portfolio/{{portfolioid}}",
-      method: "POST",
-      success: function (response) {
-        console.log("refrefreshed", response);
-        window.location.href = "/quotes/{{portfolioid}}/{{for_year}}";
-      },
-      error: function () {
-        console.log("Failed to copy quotes");
-      }});
-  };
 </script>
 
   <!-- your quotes in portfolio  here {{quotes}} -->
@@ -207,13 +66,15 @@
             <td class="symbol" data-symbol="{{ entry[1] }}" data-quoteid="{{ entry[0]}}">
               {{ entry[1] }}
 
-              <div class="d-flex gap-2">
+              <div class="d-flex flex-column flex-md-row gap-1">
                 <button class="btn btn-sm btn-outline-primary" onclick="editQuotePopup('{{ entry[0]}}')">
                     <i class="bi bi-pencil"></i>
+                    <span class="d-inline d-md-none"> Edit</span>
                 </button>
 
                 <button class="btn btn-sm btn-outline-danger" onclick="location.href='/deletequote/{{ portfolioid }}/{{ entry[0] }}'">
                   <i class="bi bi-trash"></i>
+                  <span class="d-inline d-md-none"> Delete</span>
                 </button>
 
                 <!---<a href="{{ url_for('quotes.delete_quote_to_portfolio', portfolioid=portfolioid, quoteid=entry[0]) }}" title="Delete"><i class="bi bi-trash text-danger" ></i></a>
@@ -222,6 +83,7 @@
                 {% if entry[10] == 'add' %}
                 <button class="btn btn-sm btn-outline-success" onclick="AddNewQuoteCount('{{ entry[0]}}')">
                   <i class="bi bi-plus-circle"></i>
+                  <span class="d-inline d-md-none"> Add</span>
                 </button>
                 {% endif %}
               </div>
@@ -266,36 +128,11 @@
     &nbsp; <strong><i>Year Dividends Payed: </i> {{ nns.divtotal }} </strong> <i>(after taxes (25%) : {{ nns.realdiv}})</i>
     <span id="errmsg"> {{ err }}</span>
     </br>
-    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePopup()"><i class="bi bi-plus-circle"></i> Add New Quote</button>
+    <button type="submit" class="btn btn-primary w-25 mt-3" onclick="addNewQuoteModal()"><i class="bi bi-plus-circle"></i> Add New Quote</button>
 
     {% if copy_prtf_button %}
     <button type="submit" class="btn btn-primary w-50 mt-3" onclick="copyQuotes()"><i class="bi bi-plus-circle"></i> Copy Quotes To Current Year({{for_year}})</button>
     {% endif %}
-
-    <div class="content">
-      <div onclick="togglePopup()" class="close-btn">
-          &times
-      </div>
-      <h5>Add New Quote to Portfolio</h5>
-        <form method="post" action="/addquote" id="togglePopup">
-
-          <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
-           Enter Symbol (quote) Name: <input id='symbolInPortfolio' type="text" name="symbol" class="ddform_input_field"> <br>
-          <span  id="tooltip" class="tooltip-message" style="display:none;"></span>
-
-
-          <div style="display:none" id="symbol_buy_info">
-          Buy Price: <input type="text" name="price" class="form_input_field" onkeypress="return ( (event.charCode>=48 && event.charCode<=57) || event.charCode === 46)">
-          Quantity: <input type="text" name="quantity" class="form_input_field" onkeypress="return event.charCode>=48 && event.charCode<=57" ><br>
-          From Year: <input type="text" name="from_year"class="form_input_field" onkeypress="return event.charCode>=48 && event.charCode<=57" >
-          From Month: <input type="text" name="from_month" class="form_input_field" maxlength="2" onkeypress="return event.charCode>=48 && event.charCode<=57"><br>
-          To Year: <input type="text" name="to_year" class="form_input_field" onkeypress="return event.charCode>=48 && event.charCode<=57">
-          To Month: <input type="text" name="to_month" class="form_input_field" maxlength="2" onkeypress="return event.charCode>=48 && event.charCode<=57">
-          <button type="submit" class="btn btn-primary mt-3">Insert Quote to Porfolio</button>
-          </div >
-        </form>
-    </div>
-
 
 
     <div class="modal fade" id="editModal" tabindex="-1">
@@ -311,13 +148,14 @@
             <form method="post" action="/editquote" >
               <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
               <input type="hidden" name="quoteid" id="edit_quoteid">
+              <input type="hidden" name="quantity" id="edit_quantity">
               <input type="text" name="from_year" value="{{ for_year}}" hidden >
               <input type="text" name="to_year" value="{{ for_year}}" hidden >
 
               Symbol (quote) Name: <span id='edit_symbol'></span> <br>
               <div>
               Buy Price: <input id='edit_price' type="text" name="price" class="form_input_field">
-              Qnt:  <input  id='edit_quantity' type="text" name="quantity" class="form_input_field" maxlength="6" size="7"> <br>
+              Qnt: <span id='e_qnt'></span>
               </div>
               From Year:<span> <b>{{ for_year}} </b></span>
               From Month:<input type="text" name="from_month" id="edit_from_month" class="form_input_field" maxlength="2"><br>
@@ -326,6 +164,45 @@
 
               <button type="submit" class="btn btn-primary mt-3">Execute Edit</button>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+ <!-----new quotes as in porftfolio as in common list-->
+    <div class="modal fade" id="addNewQuoteModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-content p-3">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Quote to Portfolio:</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <form method="post" action="/addquote" id="addNewQuoteModalForm">
+              <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
+              <input type="text" name="from_year" value="{{ for_year}}" hidden >
+              <input type="text" name="to_year" value="{{ for_year}}" hidden >
+
+
+              Enter Symbol (quote) Name: <input id='symbolInPortfolio' type="text" name="symbol" class="form_input_field"> <br>
+             <span  id="tooltip" class="tooltip-message" style="display:none;"></span>
+
+             <div style="display:none" id="symbol_buy_info">
+              Buy Price: <input type="text" name="price" class="form_input_field" onkeypress="return ( (event.charCode>=48 && event.charCode<=57) || event.charCode === 46)">
+              Quantity: <input type="text" name="quantity" maxlength="6" size="7" class="form_input_field" onkeypress="return (( event.charCode>=48 && event.charCode<=57))"><br>
+
+              From Year: <span> <b>{{ for_year}} </b></span>
+              From Month: <input type="text" maxlength="2"  name="from_month" class="form_input_field" maxlength="2" onkeypress="return event.charCode>=48 && event.charCode<=57"><br>
+              To Year: <span> <b>{{ for_year}} </b></span>
+              To Month: <input type="text" maxlength="2"   name="to_month" class="form_input_field" maxlength="2" onkeypress="return event.charCode>=48 && event.charCode<=57">
+
+              <br>
+              <button type="submit" class="btn btn-primary mt-3">Insert Quote to Porfolio</button>
+              </div >
+            </form>
+
           </div>
         </div>
       </div>
@@ -347,7 +224,7 @@
       </div>
     </div>
 
-
+   <!-----something that already exists in portfolio-->
     <div class="modal fade" id="addModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered" >
         <div class="modal-content p-3">

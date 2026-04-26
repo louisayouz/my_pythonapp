@@ -24,6 +24,7 @@
     }
 
     function createUser(){
+      $("#define_new_user_btn").prop("disabled", true);
       $.ajax({
         url: "/save_new_user",
         //sync: false,
@@ -35,7 +36,12 @@
             console.log(response.status);
             console.log(response.msg);
             $('#msg').text(response.msg);
-         }
+         },
+         complete: function () {
+          // ALWAYS restore button
+          $("#define_new_user_btn").prop("disabled", false);
+          $("#define_new_user_btn").html($btn.data("original-html"));
+        }
       });
 
       event.preventDefault();

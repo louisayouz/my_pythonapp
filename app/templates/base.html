@@ -82,6 +82,12 @@
         }
         return false;
       }
+
+    function isNumberOnlyInput(event) {
+      if (!parseInt(event.key) && event.key != 'Backspace') {
+          event.preventDefault();
+      }
+  }
     </script>
 
 </head>

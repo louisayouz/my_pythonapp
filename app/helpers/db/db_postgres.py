@@ -218,11 +218,11 @@ def add_quote(portfolio_id, symbol, price, quotes_count, from_year, from_month, 
     conn = get_db_connection()
 
     cur_to_quotes = conn.cursor()
-    cur_to_quotes.execute("SELECT id FROM quotes WHERE quote_name=%s", (symbol,))
+    cur_to_quotes.execute("SELECT id FROM quotes WHERE quote_name=%s ORDER by id DESC", (symbol,))
     res = cur_to_quotes.fetchone()
     cur_to_quotes.close()
 
-    current_quotes_count = calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count)
+    current_quotes_count = calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count, from_year)
 
     cur = conn.cursor()
     add_full_year_dividents = False
@@ -281,25 +281,26 @@ def edit_quote(portfolio_id, quote_id, price, quotes_count, from_year, from_mont
     cur = conn.cursor()
     stmt = """
     UPDATE portfolio_quotes SET buy_price=%s, buy_count=%s,
-        from_year=%s, from_month=%s, to_year=%s, to_month=%s,
-        current_quotes_count=%s
+        from_year=%s, from_month=%s, to_year=%s, to_month=%s
     WHERE portfolio_id=%s AND id=%s
     """
     #print (stmt)
-    cur.execute(stmt, (price, quotes_count, from_year, from_month, to_year, to_month, current_quotes_count, portfolio_id, quote_id, ))
+    #cur.execute(stmt, (price, quotes_count, from_year, from_month, to_year, to_month, current_quotes_count, portfolio_id, quote_id, ))
+    cur.execute(stmt, (price, quotes_count, from_year, from_month, to_year, to_month, portfolio_id, quote_id, ))
 
     conn.commit()
     cur.close()
     return True
 
-def calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count):
+def calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count, from_year):
+    #last row with
     st = """
         SELECT current_quotes_count FROM portfolio_quotes A
-        WHERE portfolio_id=%s AND  quote_name = %s
+        WHERE portfolio_id=%s AND quote_name = %s AND from_year=%s
         ORDER BY from_year DESC, from_month DESC LIMIT 1
         """
     ex_cur = conn.cursor()
-    ex_cur.execute(st, ( portfolio_id, symbol))
+    ex_cur.execute(st, ( portfolio_id, symbol, from_year))
     current_quotes_count_row = ex_cur.fetchone()
     ex_cur.close()
 
@@ -314,7 +315,7 @@ def calc_current_quotes_count_with_quote_id(conn, quote_id, portfolio_id, quotes
         SELECT A.current_quotes_count as CC FROM portfolio_quotes A
         LEFT JOIN portfolio_quotes B ON B.id=%s
         WHERE A.portfolio_id=%s AND A.quote_name = B.quote_name AND A.id <> %s
-        ORDER BY A.from_year DESC, A.from_month DESC
+        ORDER BY A.from_year DESC, A.from_month DESC LIMIT 1
         """
     ex_cur = conn.cursor()
     ex_cur.execute(st, (quote_id, portfolio_id, quote_id))

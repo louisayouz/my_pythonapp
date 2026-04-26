@@ -64,7 +64,7 @@ def addquote_to_portfolio():
         to_month = None
 
     err=''
-    if (portfolio_id > 0) and ( price > 0) and (quotes_count >0 ) and (symbol != ''):
+    if (portfolio_id > 0) and ( price > 0) and (quotes_count != 0 ) and (symbol != ''):
         add_quote(portfolio_id, symbol.upper(), price, quotes_count, from_year, from_month, to_year, to_month)
     else:
         err = "Invalid quotes parameters"

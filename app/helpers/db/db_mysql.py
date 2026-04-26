@@ -215,7 +215,7 @@ def add_quote(portfolio_id, symbol, price, quotes_count, from_year, from_month, 
     res = cur_to_quotes.fetchone()
     cur_to_quotes.close()
 
-    current_quotes_count = calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count)
+    current_quotes_count = calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count, from_year)
 
     cur = conn.cursor()
     add_full_year_dividents = False
@@ -286,14 +286,14 @@ def edit_quote(portfolio_id, quote_id, price, quotes_count, from_year, from_mont
     cur.close()
     return True
 
-def calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count):
+def calc_current_quotes_count_by_symbol(conn, symbol, portfolio_id, quotes_count, from_year):
     st = """
         SELECT current_quotes_count FROM portfolio_quotes A
-        WHERE portfolio_id=%s AND  quote_name = %s
+        WHERE portfolio_id=%s AND quote_name= %s AND from_year=%s
         ORDER BY from_year DESC, from_month DESC LIMIT 1
         """
     ex_cur = conn.cursor()
-    ex_cur.execute(st, ( portfolio_id, symbol))
+    ex_cur.execute(st, ( portfolio_id, symbol, from_year))
     current_quotes_count_row = ex_cur.fetchone()
     ex_cur.close()
 
