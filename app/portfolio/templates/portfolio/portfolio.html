@@ -8,10 +8,14 @@
   <!-- your portfolio list  here -->
 
 <script type="text/javascript">
-  function allow_portfolio_deletion(e, p_name) {
+  function allow_portfolio_deletion(e, p_name, portfolioid) {
     if( !confirm('Do you really want to remove '+ p_name +' portfolio?')){
       console.log( 'delete portfolio cancelled');
       e.preventDefault();
+    }
+    else
+    {
+      window.location.href='/delete_portfolio/'+ portfolioid;
     }
   }
 
@@ -60,13 +64,13 @@
 </script>
   <div class="container mt-5">
     <div class="d-flex justify-content-center">
-      <h2>  Portfolios ({{user_name}})</h2>
+      <h2> Portfolios - {{for_year}} ({{user_name}})</h2>
     </div>
   <div  class="center">
     <table id = "data" class="center">
      <thead>
         <tr>
-        <th>Id</th>
+        <!--<th>Id</th>-->
         <th>Portfolio Name</th>
         <th> &nbsp; </th>
         <th> &nbsp;  </th>
@@ -75,10 +79,27 @@
       <tbody>
         {% for entry in portfolio %}
           <tr>
-            <td>{{ entry[0]}}</td>
-            <td><div class="input-wrapper"> <input type="text" value="{{ entry[1] }}"  class="p_name form-control editable-input" data-oldname="{{ entry[1] }}"  data-pid="{{ entry[0]}}" readonly> <i class="bi bi-pencil-fill edit-icon"></i></div></td>
-            <td> &nbsp;&nbsp; <a href="/quotes/{{ entry[0]}}/{{for_year}}"> To Quotes - {{for_year}} Year <i class="bi bi-briefcase"></i></a></td>
-            <td>&nbsp;&nbsp;<a href="/delete_portfolio/{{ entry[0]}}"  onclick="allow_portfolio_deletion(event, '{{ entry[1] }}')" title="Delete Portfolio"><i class="bi bi-trash text-danger" ></i></a></td>
+            <!---<td>{{ entry[0]}}</td>-->
+            <td pid="{{ entry[0]}}">
+              <div class="input-wrapper">
+                <input type="text" value="{{ entry[1] }}" class="p_name form-control editable-input" data-oldname="{{ entry[1] }}" data-pid="{{ entry[0]}}" readonly>
+                <i class="bi bi-pencil-fill edit-icon"></i>
+              </div>
+            </td>
+
+            <td> &nbsp;&nbsp;
+             <button class="btn btn-sm btn-outline-primary" onclick="location.href='/quotes/{{ entry[0]}}/{{for_year}}'">
+                <i class="bi bi-briefcase"></i>
+                <span class="d-inline d-md-none"> View </span>
+             </button>
+            </td>
+
+            <td>&nbsp;&nbsp;
+              <button class="btn btn-sm btn-outline-danger" onclick="allow_portfolio_deletion(event, '{{ entry[1] }}','{{ entry[0] }}')" >
+                <i class="bi bi-trash"></i>
+                <span class="d-inline d-md-none">Delete</span>
+              </button>
+            </td>
           </tr>
         {% endfor %}
       </tbody>

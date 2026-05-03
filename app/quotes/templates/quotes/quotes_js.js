@@ -14,10 +14,14 @@
         case 'quantity':
           quantity = $(item).data('qnt');
           $('#edit_quantity').val(quantity); $('#e_qnt').html(quantity); break;
-          case 'from_month':
-          from_month = $(item).html(); $('#edit_from_month').val($(item).html()); console.log(from_month); break;
-        case 'to_month':
-          to_month = $(item).html(); $('#edit_to_month').val($(item).html()); console.log(to_month); break;
+        case 'from_month':
+          $('#edit_to_month').val('');
+          to_month = parseInt($(item).attr('tomonthattr'), 10);
+          if(to_month != 0 ){
+             $('#edit_to_month').val(to_month);
+          }
+          from_month = $(item).attr('frommonthattr');
+          $('#edit_from_month').val(from_month); console.log(from_month); break;
       }
     });
 
@@ -30,12 +34,13 @@
     modal.show();
   }
 
-  function AddNewQuoteCount(rowid) {
+  function AddNewQuoteCount(rowid)
+  {
     let tooltip = $('#tooltip_add');
     tds = $("#rowid-"+rowid).find('td')
-    tomonthObj = $("#rowid-"+rowid).find('.to_month');
-
-    if ($(tomonthObj).html().trim().length == 0){
+    tomonth  = $("#rowid-"+rowid).find('.from_month').attr('tomonthattr');
+    if(tomonth == 0){
+    //if ($(tomonthObj).html().trim().length == 0){
       tooltip.text("'To month' value is empty! Edit 'To month' value and click on 'Add' again.");
       tooltip.attr("style", "display:inline-block");
       $(".content_add_block").attr("style", "display:none");
@@ -61,13 +66,10 @@
             //quantity = $(item).data('qnt');
             //$('#add_quantity').val(quantity); console.log(quantity); break;
           case 'from_month':
-            var to_month_obj = $("#rowid-"+rowid).find('.to_month');
-            var from_month = parseInt($(to_month_obj).html()) +1;
-            $('#add_from_month').val(from_month); console.log(from_month); break;
-
-          case 'to_month':
-            var to_month = 12;
-            $('#add_to_month').val(to_month); console.log(to_month); break;
+            var to_month = $("#rowid-"+rowid).find('.from_month').attr('tomonthattr');
+            var from_month = parseInt(to_month) + 1;
+            $('#add_from_month').val(from_month);
+            $('#add_to_month').val(12); break;
         }
       });
     }
@@ -134,8 +136,9 @@
         console.log("refrefreshed", response);
         window.location.href = "/quotes/{{portfolioid}}/{{for_year}}";
       },
-      error: function () {
+      error: function (){
         console.log("Failed to copy quotes");
       }});
   };
+
 </script>

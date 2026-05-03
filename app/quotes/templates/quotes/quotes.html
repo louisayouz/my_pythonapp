@@ -6,7 +6,7 @@
 
 {% include 'quotes/quotes_js.js' %}
 <script>
-  $(document).ready(function(){
+  $(document).ready( function(){
 
     $('#symbolInPortfolio').on('blur', function (){
       let value = $(this).val().trim();
@@ -15,13 +15,13 @@
       tooltip.text("");
       tooltip.attr("style", "display:none");
 
-      if (value === "" ){
+      if (value === ""){
         $('#symbol_buy_info').attr('style','display:none');
         tooltip.text("Enter Quote symbol.");
         tooltip.attr("style", "display:inline-block");
       }
       else
-        if ({{ symbols | tojson }}.includes(value.toUpperCase()))
+        if ( {{ symbols | tojson }}.includes(value.toUpperCase()))
         {
           $('#addNewQuoteModalForm #symbolInPortfolio').focus();
           tooltip.text("Symbol already exists in prorfolio. Please click on 'Add' link  on row with same Quote.");
@@ -35,7 +35,7 @@
 
       event.preventDefault();
     });
-  })  //document ready
+  }) //document ready
 
 </script>
 
@@ -48,15 +48,11 @@
     <table id="data" class="table table-striped table-responsive">
       <thead>
         <tr>
-          <!---<th> Id</th>--->
           <th> Symbol</th>
           <th> Buying Price</br><i>Closed Price</i> </th>
-          <th> Buying Qty</br><i>Current Qty</i> </th>
-          <th> Cost </th>
-          <th> From </br> Month</th>
-          <th> To </br> Month</th>
-          <th> Dividents</br> Info</th>
-          <th> </th>
+          <th> Buying Qty</br><i>Current Qty</i> <br>Cost</th>
+          <th> From/To </br> Month <br> Dividents</th>
+
         </tr>
       </thead>
 
@@ -64,7 +60,8 @@
         {% for entry in quotes %}
           <tr id="rowid-{{ entry[0]}}" >
             <td class="symbol" data-symbol="{{ entry[1] }}" data-quoteid="{{ entry[0]}}">
-              {{ entry[1] }}
+              <a href="/quotedividents/{{ entry[1] }}"><b>{{ entry[1] }}</b></a>
+
 
               <div class="d-flex flex-column flex-md-row gap-1">
                 <button class="btn btn-sm btn-outline-primary" onclick="editQuotePopup('{{ entry[0]}}')">
@@ -96,22 +93,34 @@
             <td class="quantity" data-qnt="{{ entry[3]}}">
               <div>{{ entry[3]}}</div>
               <div class="sub-row">( {{entry[8]}})</div>
+              <div class="sub-row"><b>{{ entry[4] }}</b></div>
             </td>
 
-            <td>{{ entry[4] }} {{total}}</td>
+            <!--- <td>{{ entry[4] }} </td> -->
 
             <!--- the year is same for showing -->
-            <td class="from_month">{{ entry[6]}}</td>
-            <td class="to_month"> {% if entry[7] %} {{ entry[7]}} {% endif %}</td>
-            <td>
+            {% set tomonthattr = 0 %}
+            {% if entry[7] %}
+              {% set tomonthattr = entry[7] %}
+            {% endif %}
+            <td class="from_month" frommonthattr="{{ entry[6]}}" tomonthattr="{{ tomonthattr}}" >
+              {{ entry[6]}}
+              {% if entry[7] %} : {{ entry[7]}} {% endif %}
+
 
             {% if entry[5] %}
+              <br>
               {% set tomonth = 12 %}
               {% if entry[7] %}
               {% set tomonth = entry[7] %}
               {% endif %}
-              <a href="#" onclick="ShowDividends('{{entry[1]}}', '{{for_year}}', '{{ entry[6]}}', '{{tomonth}}')"> {{entry[9]}} </a> &nbsp;
-              <a href="/quotedividents/{{ entry[1] }}"  title="To All Dividends"><i class="bi bi-fan text-primary"></i></a></td>
+
+              {% if entry[9]*1 > 0 %}
+                <a href="#" onclick="ShowDividends('{{entry[1]}}', '{{for_year}}', '{{ entry[6]}}', '{{tomonth}}')"> {{entry[9]}} </a> &nbsp;
+                 <!----
+                  <a href="/quotedividents/{{ entry[1] }}" title="To All Dividends"><i class="bi btn-sm bi-cash-coin"></i></a></td>
+                 -->
+               {% endif %}
             {% endif %}
             </td>
           </tr>
@@ -123,9 +132,9 @@
       </tbody>
     </table>
 
-    <strong><i>Cost: {{ ns.total }}</strong> / {{nsc.total_cur}} </i>
+    <strong><i>Cost: {{ "{:,.2f}".format(ns.total) }}</strong> / {{ "{:,.2f}".format(nsc.total_cur)}} </i>
     {% set nns.realdiv = nns.divtotal - (nns.divtotal * 25)/ 100 %}
-    &nbsp; <strong><i>Year Dividends Payed: </i> {{ nns.divtotal }} </strong> <i>(after taxes (25%) : {{ nns.realdiv}})</i>
+    &nbsp; <strong><i>Year Dividends Payed: </i> {{ "{:,.2f}".format(nns.divtotal) }} </strong> <i>(after taxes (25%) : {{ "{:,.2f}".format(nns.realdiv)}})</i>
     <span id="errmsg"> {{ err }}</span>
     </br>
     <button type="submit" class="btn btn-primary w-25 mt-3" onclick="addNewQuoteModal()"><i class="bi bi-plus-circle"></i> Add New Quote</button>
