@@ -23,11 +23,7 @@ def validate_numeric(var):
 
 def symbols_as_array(data):
    symbols = []
-   for row in data:
-      if row[1] in symbols:
-         continue
-      else:
-         symbols.append(row[1])
+   symbols = [x[1] for x in data if x[1] not in symbols]
    return symbols
 
 def is_valid_string(s: str) -> bool:

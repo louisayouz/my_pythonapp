@@ -3,7 +3,7 @@ from datetime import datetime
 from app.helpers.db import create_portfolio, delete_portfolio, get_p_name, portfolio_data, portfolio_quotes,update_quote_prices
 from app.helpers.db import all_symbols, all_dividents, add_quote, refresh_quotes
 from app.helpers.db import delete_protfolio_quote, edit_quote, all_dividents, add_div, delete_div, div_for_quote_and_year,delete_symbol
-from app.helpers.db import import_quote_divs, exist_cur_year_divs, prev_year_exist
+from app.helpers.db import import_quote_divs, exist_cur_year_divs, prev_year_exist, get_all_quotes
 
 from app.helpers.utils import validate_int, validate_string, validate_numeric, symbols_as_array,nearest_weekday
 from user_agents import parse
@@ -22,27 +22,34 @@ def quotes(portfolioid, calcyear=None):
 
     err = request.args.get('err') or ''
     ua = parse(request.headers.get("User-Agent"))
+    ##quotes used in portfolio
+    symbols = symbols_as_array(data)
+    ##all quotes in the system
+    allquotes = get_all_quotes()
+    allquotes = [x for x in allquotes if x not in symbols]
 
     if ua.is_mobile:
         err = 'mobile'
         return render_template('quotes/quotes.html',
                         quotes=data,
-                        symbols = symbols_as_array(data),
+                        symbols = symbols,
                         user_name=session['username'],
                         portfolioid=portfolioid,
                         portfolio_name=p_name,
                         for_year=for_year,
                         copy_prtf_button=( len(data) == 0 ) and prev_year_exist(portfolioid, (for_year-1)),
+                        all_quotes = allquotes,
                         err=err)
     else:
         return render_template('quotes/quotes.html',
                         quotes=data,
-                        symbols = symbols_as_array(data),
+                        symbols = symbols,
                         user_name=session['username'],
                         portfolioid=portfolioid,
                         portfolio_name=p_name,
                         for_year=for_year,
                         copy_prtf_button=( len(data) == 0 ) and prev_year_exist(portfolioid, (for_year-1)),
+                        all_quotes = allquotes,
                         err=err)
 
 

@@ -9,7 +9,7 @@
 
     let refresh = $('.refresh');
     let refreshTxt = refresh.html();
-    refresh.html('wait...refresh started')
+    refresh.html('wait...executing refresh')
     refresh.removeClass('btn-primary');
     refresh.addClass("btn-warning").prop("disabled", true);
 
@@ -75,63 +75,89 @@
       <h2> Quote List</h2>
     </div>
 
-    <div  class="center">
-    <table id = "data" class="center">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>&nbsp;Quote Name&nbsp; </th>
-          <th>&nbsp;Quote Price&nbsp; </th>
-          <th>&nbsp;For Date&nbsp; </th>
-          <th>&nbsp;</th>
-          <!---<th>&nbsp;</th> -->
+    <!--div  class="center" --->
 
-        </tr>
-      </thead>
-      <tbody>
+      <div class="table-wrapper">
+        <table id = "data" class="table table-striped table-responsive">
+          <thead>
+            <tr>
+              <th> Id </th>
+              <th> Quote Name </th>
+              <th> Quote Price </th>
+              <th> For Date </th>
+              <th> &nbsp; </th>
+              <!---th> &nbsp; </th-->
+            </tr>
+          </thead>
+        </table>
 
-        {% set ns = namespace(sendButtonId=1) %}
-        {% set color = 'red' %}
-        {% for entry in symbols %}
+      <div class="table-body-scroll">
+        <table  class="table table-striped table-responsive">
+            <tbody>
 
-          <tr>
-            <td>{{ entry[0]}}</td>
-            <td>{{ entry[1] }}</td>
+            {% set ns = namespace(sendButtonId=1) %}
+            {% set color = 'red' %}
+            {% for entry in symbols %}
 
-            {% if entry[3]*1 != 0 and entry[4] != '' %}
-            {%   if entry[3] - entry[5] > 0 %}
-            {%     set color='gr' %}
-            {%     else %}
-            {%     set color='red' %}
-            {%   endif %}
+              <tr>
+                <td>{{ entry[0]}}</td>
+                <td>{{ entry[1] }}</td>
 
-                <td> <div class="sub-row-{{color}}">{{entry[3]}}</div><div class="sub-row"> {{entry[5]}} ({{entry[3] - entry[5]}})</div></td>
-            {% else %}
-              {% set close_price_at_date = "%s" % (entry[1])%}
-              <td>
-                <input id="closeprice_symbol_{{ns.sendButtonId}}" value="{{entry[3]}}" buttonid="{{ns.sendButtonId}}" maxlength="8" size="8">
-                <button id="sendButton{{ns.sendButtonId}}" style="display: none;" onclick="ChangeClosePrice('closeprice_symbol_{{close_price_at_date}}', {{ns.sendButtonId}})">Send</button>
+                {% if entry[3]*1 != 0 and entry[4] != '' %}
+                {%   if entry[3] - entry[5] > 0 %}
+                {%     set color='gr' %}
+                {%     else %}
+                {%     set color='red' %}
+                {%   endif %}
+
+                <td>
+                  <div class="sub-row-{{color}}">{{entry[3]}}</div>
+                  <div class="sub-row"> {{entry[5]}} ({{entry[3] - entry[5]}})</div>
+                </td>
+                {% else %}
+                  {% set close_price_at_date = "%s" % (entry[1])%}
+                  <td>
+                    <input id="closeprice_symbol_{{ns.sendButtonId}}" value="{{entry[3]}}" buttonid="{{ns.sendButtonId}}" maxlength="8" size="8">
+                    <button id="sendButton{{ns.sendButtonId}}" style="display: none;" onclick="ChangeClosePrice('closeprice_symbol_{{close_price_at_date}}', {{ns.sendButtonId}})">Send</button>
+                  </td>
+                {% endif %}
+
+                <td>{{entry[4]}} <div class="sub-row" >{{entry[6]}}</div></td>
+                <td>
+                  <div class="d-flex flex-column flex-md-row gap-1">
+                    <button class="btn btn-sm btn-outline-primary" onclick="location.href='/quotedividents/{{ entry[1] }}'">
+                      <i class="bi bi-zoom-in"></i>
+                      <span class="d-inline d-md-none"> </span>
+                    </button>
+
+
+                  <!--<a href="/quotedividents/{{ entry[1] }}" title="To Dividends"><i class="bi bi-zoom-in text-primary"></i></a>
+                  </td
+
+                <td>--->
+                  {% if entry[2] == 'not_used' %}
+
+                    <button class="btn btn-sm btn-outline-danger" onclick="location.href='/deletesymbol/{{ entry[1] }}'">
+                      <i class="bi bi-trash"></i>
+                      <span class="d-inline d-md-none"> Delete</span>
+                    </button>
+                  <!--<a href="/deletesymbol/{{ entry[1] }}" title=" Delete Quote"><i class="bi bi-trash text-danger" ></i></a> -->
+                  {% else %}
+                    &nbsp;
+                  {% endif %}
+                </div>
               </td>
-            {% endif %}
 
-            <td>{{entry[4]}} <div class="sub-row" >{{entry[6]}}</div></td>
-            <td> <a href="/quotedividents/{{ entry[1] }}" title="To Dividends"><i class="bi bi-zoom-in text-primary"></i></a> </td>
+                <!---<td> <a href="/importquotedividents/{{ entry[1] }}"> &nbsp; Import Quote Dividends &nbsp;</a> </td>
+              --->
+              </tr>
+            {% set ns.sendButtonId = ns.sendButtonId+1 %}
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+      <!--/div-->
 
-            <td>
-              {% if entry[2] == 'not_used' %}
-              <a href="/deletesymbol/{{ entry[1] }}" title=" Delete Quote"><i class="bi bi-trash text-danger" ></i></a>
-              {% else %}
-                 &nbsp;
-              {% endif %}
-            </td>
-
-            <!---<td> <a href="/importquotedividents/{{ entry[1] }}"> &nbsp; Import Quote Dividends &nbsp;</a> </td>
-          --->
-          </tr>
-        {% set ns.sendButtonId = ns.sendButtonId+1 %}
-        {% endfor %}
-      </tbody>
-      </table>
       <button onclick ="refreshQuotes();" class="refresh btn btn-primary w-30 mt-3">Refresh quote prices</button>
     </div>
   </div>

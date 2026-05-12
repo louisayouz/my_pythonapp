@@ -30,6 +30,9 @@
   }
 
   function addNewQuoteModal(){
+
+    $('#symbolInPortfolio').val('');
+
     const modal = new bootstrap.Modal(document.getElementById('addNewQuoteModal'));
     modal.show();
   }
@@ -60,9 +63,11 @@
             $('#add_quoteid').val($(item).data('quoteid'));
             $('#add_symbol').html($(item).data('symbol'));//for show only
             $('#addsymbol').val($(item).data('symbol')); //form data
+
           case 'price':
-            price = $(item).html();  $('add_price').val($(item).html()); console.log(price); break;
-          case 'quantity':
+            price = $(item).html();  $('add_price').val($(item).html());
+            break;
+          //case 'quantity':
             //quantity = $(item).data('qnt');
             //$('#add_quantity').val(quantity); console.log(quantity); break;
           case 'from_month':
@@ -73,11 +78,13 @@
         }
       });
     }
+
       const modal = new bootstrap.Modal(document.getElementById('addModal'));
       modal.show();
     }
 
-    function ShowDividends(quote='', foryear=0, frommonth=0, tomonth=0){
+    function ShowDividends(quote='', foryear=0, frommonth=0, tomonth=0)
+    {
        $('#tableContainer').empty();
        if (quote != ''){
           getDivReq(quote, foryear, frommonth, tomonth );
@@ -87,7 +94,7 @@
        modal.show();
     }
 
-  function getDivReq(quote, foryear, frommonth, tomonth ){
+   function getDivReq(quote, foryear, frommonth, tomonth ){
     $.ajax({
       url: "/getquotedivs/"+quote+"/"+foryear+"/"+frommonth+"/"+tomonth,
       method: "GET",
@@ -100,8 +107,8 @@
       },
       error: function () {
         console.log("Failed to fetch data");
-      }});
-  };
+      }})
+   };
 
   function fillDivTable(data){
       var table = $('<table class="table">');
@@ -126,19 +133,5 @@
       // Append table to container
       $('#tableContainer').append(table);
   }
-
-
-  function copyQuotes(){
-    $.ajax({
-      url: "/copy_portfolio/{{portfolioid}}",
-      method: "POST",
-      success: function (response) {
-        console.log("refrefreshed", response);
-        window.location.href = "/quotes/{{portfolioid}}/{{for_year}}";
-      },
-      error: function (){
-        console.log("Failed to copy quotes");
-      }});
-  };
 
 </script>

@@ -268,6 +268,18 @@ def is_symbol_in_any_portfolio(symbol):
 
     return False
 
+def get_all_quotes():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT quote_name FROM quotes ORDER BY quote_name")
+    rows = cur.fetchall()
+    cur.close()
+    if rows:
+        symbols = [row[0] for row in rows]
+        return symbols
+
+    return []
+
 def edit_quote(portfolio_id, quote_id, price, quotes_count, from_year, from_month, to_year, to_month):
     conn = get_db_connection()
     current_quotes_count = calc_current_quotes_count_with_quote_id(conn, quote_id, portfolio_id, quotes_count)

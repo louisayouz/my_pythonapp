@@ -29,6 +29,22 @@
       border:1px solid black;
   }
 
+  .table-wrapper {
+    width: 100%;
+  }
+
+  .table-body-scroll {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  /* keep columns aligned */
+  .table-wrapper table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+
   .content {
     position: absolute;
     top: 50%;
@@ -45,43 +61,26 @@
     display: none;
     /*to hide popup initially*/
   }
-  /*
+
   .content_edit {
-    position: absolute;
+    position: fixed; /* important */
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 600px;
-    height: 300px;
-    text-align: left;
+
+    width: 90%;
+    max-width: 500px;
+
+    max-height: 90vh;
+    overflow-y: auto;
+
     background-color: #e2e6e9;
-    box-sizing: border-box;
-    padding: 10px;
-    z-index: 100;
-    border-radius: 25px;
+    padding: 15px;
+    z-index: 1000;
+    border-radius: 15px;
+
     display: none;
-}
-*/
-
-.content_edit {
-  position: fixed; /* important */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  width: 90%;
-  max-width: 500px;
-
-  max-height: 90vh;
-  overflow-y: auto;
-
-  background-color: #e2e6e9;
-  padding: 15px;
-  z-index: 1000;
-  border-radius: 15px;
-
-  display: none;
-}
+  }
 
  .modal-content {
   background-color: #e2e6e9;
@@ -225,4 +224,28 @@
 
 .input-wrapper:hover .edit-icon {
   opacity: 0.6;
+}
+
+
+.autocomplete-container {
+  position: relative;
+}
+
+.suggestions-box {
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.suggestion-item {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestion-item:hover {
+  background-color: #f1f1f1;
 }

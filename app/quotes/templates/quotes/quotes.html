@@ -5,7 +5,10 @@
 {% block content %}
 
 {% include 'quotes/quotes_js.js' %}
+
+
 <script>
+
   $(document).ready( function(){
 
     $('#symbolInPortfolio').on('blur', function (){
@@ -35,7 +38,47 @@
 
       event.preventDefault();
     });
+
+    //incremental search
+    const quotes = {{ all_quotes | tojson }}
+    const input = document.getElementById('symbolInPortfolio');
+    const box = document.getElementById('suggestions');
+
+    input.addEventListener('input', function () {
+      const value = this.value.toUpperCase();
+      box.innerHTML = '';
+
+      if (value){
+        const matches = quotes.filter(q => q.startsWith(value));
+        matches.forEach(match => {
+            const div = document.createElement('div');
+            div.classList.add('suggestion-item');
+            div.textContent = match;
+
+            div.onclick = () => {
+                input.value = match;
+                box.innerHTML = '';
+            };
+
+            box.appendChild(div);
+        });
+      }
+    });
+
   }) //document ready
+
+  function copyQuotes(){
+    $.ajax({
+      url: "/copy_portfolio/{{portfolioid}}",
+      method: "POST",
+      success: function (response) {
+        console.log("refrefreshed", response);
+        window.location.href = "/quotes/{{portfolioid}}/{{for_year}}";
+      },
+      error: function (){
+        console.log("Failed to copy quotes");
+      }});
+  };
 
 </script>
 
@@ -45,23 +88,26 @@
     {% set ns = namespace(total=0) %}
     {% set nsc = namespace(total_cur=0) %}
     {% set nns = namespace(divtotal=0) %}
-    <table id="data" class="table table-striped table-responsive">
+
+    <div class="table-wrapper">
+    <table class="table table-striped table-responsive">
       <thead>
         <tr>
           <th> Symbol</th>
           <th> Buying Price</br><i>Closed Price</i> </th>
           <th> Buying Qty</br><i>Current Qty</i> <br>Cost</th>
-          <th> From/To </br> Month <br> Dividents</th>
-
+          <th> From/To Month <br> Dividents</th>
         </tr>
       </thead>
+      </table>
 
+      <div class="table-body-scroll">
+      <table  id="data" class="table table-striped table-responsive">
       <tbody>
         {% for entry in quotes %}
           <tr id="rowid-{{ entry[0]}}" >
             <td class="symbol" data-symbol="{{ entry[1] }}" data-quoteid="{{ entry[0]}}">
               <a href="/quotedividents/{{ entry[1] }}"><b>{{ entry[1] }}</b></a>
-
 
               <div class="d-flex flex-column flex-md-row gap-1">
                 <button class="btn btn-sm btn-outline-primary" onclick="editQuotePopup('{{ entry[0]}}')">
@@ -87,8 +133,9 @@
             </td>
 
             <td class="price" title={{entry[11]}}({{entry[12]}}) price="{{ entry[2] }}">
-                <div class="price_in_div"> {{ entry[2] }} </div>
-                <div class="sub-row">{{entry[11]}}({{entry[12]}})</div></td>
+              <div class="price_in_div"> {{ entry[2] }} </div>
+              <div class="sub-row">{{entry[11]}}({{entry[12]}})</div>
+            </td>
 
             <td class="quantity" data-qnt="{{ entry[3]}}">
               <div>{{ entry[3]}}</div>
@@ -100,9 +147,9 @@
 
             <!--- the year is same for showing -->
             {% set tomonthattr = 0 %}
-            {% if entry[7] %}
-              {% set tomonthattr = entry[7] %}
-            {% endif %}
+              {% if entry[7] %}
+                {% set tomonthattr = entry[7] %}
+              {% endif %}
             <td class="from_month" frommonthattr="{{ entry[6]}}" tomonthattr="{{ tomonthattr}}" >
               {{ entry[6]}}
               {% if entry[7] %} : {{ entry[7]}} {% endif %}
@@ -116,11 +163,17 @@
               {% endif %}
 
               {% if entry[9]*1 > 0 %}
+                <button class="btn btn-sm btn-outline-primary" onclick="ShowDividends('{{entry[1]}}', '{{for_year}}', '{{ entry[6]}}', '{{tomonth}}')">
+                <i class= "bi bi-cash-coin"></i>
+                <span class="d-inline d-md-none">Dividends</span>
+                {{entry[9]}}
+                </button>
+                <!----
                 <a href="#" onclick="ShowDividends('{{entry[1]}}', '{{for_year}}', '{{ entry[6]}}', '{{tomonth}}')"> {{entry[9]}} </a> &nbsp;
-                 <!----
-                  <a href="/quotedividents/{{ entry[1] }}" title="To All Dividends"><i class="bi btn-sm bi-cash-coin"></i></a></td>
-                 -->
-               {% endif %}
+
+                <a href="/quotedividents/{{ entry[1] }}" title="To All Dividends"><i class="bi btn-sm bi-cash-coin"></i></a></td>
+                -->
+              {% endif %}
             {% endif %}
             </td>
           </tr>
@@ -131,6 +184,8 @@
         {% endfor %}
       </tbody>
     </table>
+    </div >
+  </div >
 
     <strong><i>Cost: {{ "{:,.2f}".format(ns.total) }}</strong> / {{ "{:,.2f}".format(nsc.total_cur)}} </i>
     {% set nns.realdiv = nns.divtotal - (nns.divtotal * 25)/ 100 %}
@@ -189,14 +244,21 @@
           </div>
 
           <div class="modal-body">
-            <form method="post" action="/addquote" id="addNewQuoteModalForm">
+            <form method="post" action="/addquote" id="addNewQuoteModalForm" autocomplete="off">
               <input type="hidden" name="portfolioid" value="{{ portfolioid }}">
               <input type="text" name="from_year" value="{{ for_year}}" hidden >
               <input type="text" name="to_year" value="{{ for_year}}" hidden >
 
 
-              Enter Symbol (quote) Name: <input id='symbolInPortfolio' type="text" name="symbol" class="form_input_field"> <br>
+             <!--  Enter Symbol (quote) Name: <input id='symbolInPortfolio' type="text" name="symbol" class="form_input_field"> -->
+
+              <div class="autocomplete-container">
+                Enter Symbol (quote) Name: <input type="text" autocomplete="off" id="symbolInPortfolio" class="form-control" placeholder="Enter symbol" name="symbol">
+                <div id="suggestions" class="suggestions-box"></div>
+
+             <br>
              <span  id="tooltip" class="tooltip-message" style="display:none;"></span>
+             </div>
 
              <div style="display:none" id="symbol_buy_info">
               Buy Price: <input type="text" name="price" class="form_input_field" onkeypress="return ( (event.charCode>=48 && event.charCode<=57) || event.charCode === 46)">
@@ -233,7 +295,7 @@
       </div>
     </div>
 
-   <!-----something that already exists in portfolio-->
+   <!-----chage setting for Quote that already exists in portfolio-->
     <div class="modal fade" id="addModal" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered" >
         <div class="modal-content p-3">
