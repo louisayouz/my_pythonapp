@@ -163,8 +163,10 @@ def sign_first_quote_same_quote_add(data):
             last_price = 0.00
             last_date = ''
 
+        last_price = Decimal(str(last_price))
+
         last_name = cur_name
-        modified_data.append(row+(val, last_price, last_date ))
+        modified_data.append(row+(val, last_price, last_date))
 
     return modified_data
 

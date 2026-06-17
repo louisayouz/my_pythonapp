@@ -157,7 +157,7 @@ def sign_first_quote_same_quote_add(data):
         else:
             last_price = 0.00
             last_date = ''
-
+        last_price = Decimal(str(last_price))
         last_name = cur_name
         modified_data.append(row+(val, last_price, last_date ))
 
@@ -474,7 +474,7 @@ def data_convert(rows):
     data = defaultdict(lambda: defaultdict(dict))
     for row in rows:
         nn = row['id']
-        quote = row['quote_name']
+        quote = row['quote_name'].strip()
         year = row['pay_year']
         month = row['pay_month']
         price = str(row['div_price'])
