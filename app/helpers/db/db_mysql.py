@@ -320,7 +320,7 @@ def calc_current_quotes_count_with_quote_id(conn, quote_id, portfolio_id, quotes
         SELECT A.current_quotes_count as CC FROM portfolio_quotes A
         LEFT JOIN portfolio_quotes B ON B.id=%s
         WHERE A.portfolio_id=%s AND A.quote_name = B.quote_name AND A.id <> %s
-        ORDER BY A.from_year DESC, A.from_month DESC
+        ORDER BY A.from_year DESC, A.from_month DESC LIMIT 1
         """
     ex_cur = conn.cursor()
     ex_cur.execute(st, (quote_id, portfolio_id, quote_id))
