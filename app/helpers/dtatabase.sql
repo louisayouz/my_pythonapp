@@ -154,3 +154,20 @@ CREATE UNIQUE INDEX IF NOT EXISTS quotes_price_last
      last_date_at DESC NULLS LAST)
     TABLESPACE pg_default;
 
+/**/
+CREATE SEQUENCE payments_id_seq;
+CREATE TABLE payments (
+    id integer NOT NULL DEFAULT nextval('payments_id_seq'::regclass),
+    pay_year integer,
+	appartment_id integer,
+	payment_at timestamp without time zone,
+	payment numeric(8,3),
+	created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS app_payments
+    ON public.payments USING btree
+	(pay_year DESC,
+	appartment_id ASC,
+	payment_at DESC);

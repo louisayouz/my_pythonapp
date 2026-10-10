@@ -3,10 +3,14 @@ import sys
 import bcrypt
 import psycopg2
 from psycopg2 import sql, OperationalError, IntegrityError
+from psycopg2.extras import RealDictCursor
+
 from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string,  month_from_timestamp, year_from_timestamp
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
+from app.constants import CURRENT_YEAR
+from app.constants import YEAR_PAYMENT
 import json
 
 from flask import g
@@ -745,3 +749,89 @@ def prev_year_exist(portfolio_id, prev_year):
         cur.close()
 
     return row is not None
+
+
+def payments():
+    conn = get_db_connection()
+    cur = conn.cursor()
+    result = {}
+    try:
+        cur.execute("SELECT appartment_id, pay_year, TO_CHAR(payment_at, 'DD-MM-YYYY'), payment, id  FROM payments WHERE pay_year=%s ORDER BY pay_year, appartment_id, payment_at DESC ", (2026, ))
+        data = cur.fetchall()
+        result = payments_to_show(data)
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+
+
+    return result
+
+def payments_to_show( data):
+    result = {}
+    old_key = None
+    value_for_sum = 0
+    for rows in data:
+      key = str(rows[0])           # "1", "2", ...
+      value = rows[1:]             # [rowid, 2026, '01-08-2025', 100]
+
+      if key not in result:
+        result[key] = []
+        if old_key:
+            result[old_key].append([ '=', 'sum:', f"{value_for_sum} ({(YEAR_PAYMENT-value_for_sum)})", ''])
+            value_for_sum = 0
+
+      old_key = key
+      value_for_sum = value_for_sum + value[2]
+      result[key].append(value)
+
+    if old_key:
+        result[old_key].append([ '=', 'sum:', f"{value_for_sum} ({(YEAR_PAYMENT-value_for_sum)})", ''])
+
+    print(result)
+    return result
+
+def new_payment(pay_year, app_id, payment):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("INSERT INTO payments (pay_year, appartment_id, payment_at, payment) VALUES(%s, %s, NOW(), %s)", (pay_year, app_id, payment))
+    conn.commit()
+    cur.close()
+    return True
+
+def remove_payment(payment_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM payments WHERE id=%s", (payment_id, ))
+    conn.commit()
+    cur.close()
+    return True
+
+def change_payment(payment_id, app_id, payment, pay_year, payed_at):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    stmt = f"""
+        UPDATE payments
+        SET  payment=%s, pay_year=%s, payment_at = %s
+        WHERE id = %s AND appartment_id=%s
+    """
+    cur.execute(stmt, ( payment, pay_year, payed_at, payment_id, app_id))
+    conn.commit()
+    cur.close()
+    return True
+
+def get_payment(payment_id):
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    result = {}
+    try:
+        cur.execute("SELECT appartment_id, pay_year, TO_CHAR(payment_at, 'DD-MM-YYYY'), payment, id  FROM payments WHERE id=%s LIMIT 1", (payment_id, ))
+        result = cur.fetchall()
+
+    except psycopg2.Error as e:
+        print("SQL error:", e)
+    finally:
+        cur.close()
+
+
+    return result

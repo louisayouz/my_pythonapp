@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %} Payments  {{cur_year}} {% endblock %}
+
+{% block content %}
+<div  class="center">
+  צאלון 14 נקיון+חשמל {{cur_year}} YEAR
+
+
+  <br><button type="submit" class="btn btn-primary w-25 mt-3" onclick="togglePaymentPopup()">
+    <i class="bi bi-plus-circle"></i>Add New Payment
+  </button>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th> Appartment Id </th>
+        <th> Payment Date </th>
+        <th> Payment Value </th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% set nssum = namespace(common_payed = 0) %}
+
+      {% set app_id = 0 %}
+      {% set ns = namespace(new_key=0) %}
+
+      {% for data_key in data %}
+        {% if app_id != data_key %}
+           {% set ns.new_key = 1 %}
+        {% endif %}
+
+        {% set entry = data[ data_key ] %}
+            {% for row_entry in entry %}
+            {% set app_id = data_key %}
+
+            <tr id="rowid_{{ row_entry[3]}}">
+              <td class="td_app_id" data-appid="{{app_id}}">
+                {% if ns.new_key %}
+                  {{ app_id}}
+                {% endif %}
+                {% set ns.new_key = 0  %}
+              </td>
+              <!--- <td>
+                {{ row_entry[0]}}
+              </td> -->
+              <td class="td_payed_at">
+                {{ row_entry[1]}}
+              </td>
+
+              <td class="td_payment">
+                {{ row_entry[2]}}
+
+
+              </td>
+              <td>
+                {% if row_entry[0] != '=' %}
+                {%  set nssum.common_payed = nssum.common_payed+ row_entry[2]%}
+                <button class="btn btn-sm btn-outline-danger" onclick="location.href='/remove_payment/{{ row_entry[3]}}'">
+                  <i class="bi bi-trash"></i>
+                  <span class="d-inline d-md-none"> Delete</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="editPaymentModal({{ row_entry[3]}}, {{app_id}})">
+                  <i class="bi bi-pencil"></i>
+                  <span class="d-inline d-md-none"> Edit</span>
+                </button>
+                <button class="btn btn-sm btn-outline-primary" onclick="location.href='/receipt/{{ row_entry[3]}}'">
+                  <i class="bi bi-cash-coin"></i>
+                  <span class="d-inline d-md-none"> Receipt</span>
+                </button>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+<div> Payed FOR {{cur_year}} YEAR : {{nssum.common_payed}} FROM <b>{{65*12*8}}</b></div>
+
+ </br></br>
+
+
+  <div class="content">
+      <div onclick="togglePaymentPopup()" class="close-btn">
+          &times
+      </div>
+
+      <h3>Add Payment</h3>
+        <form method="POST" action="/vaad_add_payment" id="''">
+          Enter Appartemnt #: <input type="text" name="app_id" id="form_app_id"><br>
+          Payment Amount: <input type="text" name="payment"> <br>
+          Enter Year: <input type="text" name="for_year" id="for_year" value ='{{cur_year}}'> <br>
+          <button type="submit" class="btn btn-primary mt-3">Add New Payment</button>
+        </form>
+  </div>
+
+  <div class="modal fade" id="editPaymentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" >
+      <div class="modal-content p-3">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Payment</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <form method="post" action="/edit_payment" >
+            <input type="hidden" name="payment_id" id="payment_id" value="">
+
+            <div>
+            Appartment Id: <input id='app_id' type="text" name="app_id" class="form_input_field">
+            </div>
+            Payment Year:<span> <b> 2026 </b></span>
+            </br>
+            Payment: <input type="text" name="payment" id="payment" class="form_input_field">
+            <br>
+            Payed At: <input id='payed_at' type="text" name="payed_at" class="form_input_field">
+            <br>
+            <button type="submit" class="btn btn-primary mt-3">Execute Edit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript">
+  function togglePaymentPopup(for_year=0) {
+    if (for_year == 0){
+      for_year = getCurrentYear();
+    }
+    else{
+      $("#for_year").attr('readonly', true);
+    }
+
+    $("#for_year").val(for_year);
+
+    $(".content").toggle();
+  }
+
+
+function editPaymentModal(row_id, app_id){
+
+  tds = $("#rowid_"+row_id).find('td');
+
+  $('#payment_id').val(row_id);
+
+  tds.each( function(idx, item){
+    cls = $(item).attr('class');
+    switch (cls) {
+      case 'td_app_id':
+        $("#app_id").val($(this).data('appid'));
+        break;
+      case 'td_payed_at':
+        console.log($(this).text().trim());
+        $("#payed_at").val($(this).text().trim());
+        break;
+      case 'td_payment':
+        $('#payment').val($(this).text().trim());
+        break;
+      case 'td_payment_id':
+        $('#payment_id').val(row_id);
+        break;
+    }
+  })
+  const modal = new bootstrap.Modal(document.getElementById('editPaymentModal'));
+  modal.show();
+}
+
+</script>
+{% endblock %}

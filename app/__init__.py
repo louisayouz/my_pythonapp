@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request
+from flask import Flask, session, redirect, url_for, request, render_template
 from datetime import timedelta
 import os
 from app.helpers.db import close_db
@@ -15,11 +15,19 @@ def create_app():
     from .quotes.routes import quotes_bp
     from .dividends.routes import dividends_bp
 
+    from .vaad.routes import vaad_bp #local only
+
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(portfolio_bp)
     app.register_blueprint(quotes_bp)
     app.register_blueprint(dividends_bp)
+
+    app.register_blueprint(vaad_bp) #local only
+
+    @app.errorhandler(404)
+    def page_not_found(error):
+        return render_template('404.html'), 404
 
 
     # Teardown DB

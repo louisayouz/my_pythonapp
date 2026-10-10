@@ -8,6 +8,7 @@
         case 'symbol':
           $('#edit_symbol').html($(item).data('symbol'));
           $('#edit_quoteid').val($(item).data('quoteid'));
+          break;
         case 'price':
           $('#edit_price').val($(item).attr('price'));console.log($(item).attr('price')); break;
           break;

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %} Receipt  {% endblock %}
+
+{% block content %}
+<style >
+  .plain-table tr:nth-child(2n+1)
+  td { background: none;}
+ </style>
+
+<div class="d-flex flex-column justify-content-center align-items-center">
+  <h3 class="mb-4">הודעת תשלום</h3>
+
+ <table class = "plain-table" style="width: 60%; font-size: 20px;border-collapse: collapse; text-align: left;">
+    <tr>
+      <td>
+        Receipt Id: </td>
+      <td>
+        {{data[0]['id']}}
+      </td>
+    </tr>
+    <tr>
+      <td>
+           Appartment Id (מספר דירה): </td>
+      <td>
+        {{data[0]['appartment_id']}}
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+            Payment For the Year (עבור שנה): </td>
+      <td>
+             {{data[0]['pay_year']}}
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+          Payed sum (סה״כ):
+      </td>
+      <td>
+      {{data[0]['payment']}}
+      </td>
+    </tr>
+
+    <tr>
+      <td>
+      Payed At (תאריך תשלום):
+      </td>
+      <td>
+      {{data[0]['to_char']}}
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+{% endblock %}
