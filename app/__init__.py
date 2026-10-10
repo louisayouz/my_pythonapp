@@ -16,6 +16,7 @@ def create_app():
     from .dividends.routes import dividends_bp
 
     from .vaad.routes import vaad_bp #local only
+    from .calculators.routes import calculators_bp #local only
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -24,6 +25,7 @@ def create_app():
     app.register_blueprint(dividends_bp)
 
     app.register_blueprint(vaad_bp) #local only
+    app.register_blueprint(calculators_bp)
 
     @app.errorhandler(404)
     def page_not_found(error):
