@@ -8,6 +8,8 @@ from app.helpers.utils import get_stock_info, nearest_weekday,is_valid_string, m
 from collections import defaultdict
 from decimal import Decimal
 from datetime import datetime
+from app.constants import CURRENT_YEAR
+from app.constants import YEAR_PAYMENT
 import json
 
 from flask import g
@@ -708,7 +710,7 @@ def payments():
     cur = conn.cursor()
     result = {}
     try:
-        cur.execute("SELECT appartment_id, pay_year, TO_CHAR(payment_at, 'DD-MM-YYYY'), payment, id  FROM payments WHERE pay_year=%s ORDER BY pay_year, appartment_id, payment_at DESC ", (2026, ))
+        cur.execute("SELECT appartment_id, pay_year, DATE_FORMAT(payment_at, '%d-%m-%Y'), payment, id  FROM payments WHERE pay_year=%s ORDER BY pay_year, appartment_id, payment_at DESC ", (2026, ))
         data = cur.fetchall()
         result = payments_to_show(data)
     except mysql.connector.Error as e:
@@ -777,10 +779,10 @@ def get_payment(payment_id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     result = {}
     try:
-        cur.execute("SELECT appartment_id, pay_year, TO_CHAR(payment_at, 'DD-MM-YYYY'), payment, id  FROM payments WHERE id=%s LIMIT 1", (payment_id, ))
+        cur.execute("SELECT appartment_id, pay_year, DATE_FORMAT(payment_at, '%d-%m-%Y'), payment, id  FROM payments WHERE id=%s LIMIT 1", (payment_id, ))
         result = cur.fetchall()
 
-    except psycopg2.Error as e:
+    except mysql.connector.Error as e:
         print("SQL error:", e)
     finally:
         cur.close()
