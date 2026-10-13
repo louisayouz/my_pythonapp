@@ -10,5 +10,5 @@ from decimal import Decimal
 calculators_bp = Blueprint('calculators', __name__, template_folder="templates")
 @calculators_bp.route('/calculators', methods=['GET', 'POST'])
 def calculators():
-  return render_template('calculators/pension.html', appname='vaad')
+  return render_template('calculators/pension.html')
 
