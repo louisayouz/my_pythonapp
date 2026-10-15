@@ -123,6 +123,11 @@
     border-radius: 4px;
 }
 
+.table_input_field {
+  margin: 2px 0;
+  border-radius: 4px;
+}
+
 .dividendlist {
     position: absolute;
     top: 50%;

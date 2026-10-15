@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 
-{% block title %} Claculators {% endblock %}
+{% block title %} Claculators   {% endblock %}
 
 {% block content %}
 
@@ -9,56 +9,55 @@
 <style>
     label {
             display: block;
-            margin-top: 12px;
+            margin-top: 10px;
         }
 
-        input {
-            padding: 7px;
-            width: 180px;
-        }
         .my-table tbody tr td {
         background-color: transparent;
     }
 </style>
 <body>
 
-<h2>Pension Calculator</h2>
+<h3>Pension Calculator</h3>
+
 <table class="my-table">
     <tr>
         <td>
             <label>
                 Initial pension:
-                <input type="number" id="pension" value="300000" min="0">
+                <input type="number" id="pension" value="300000" min="0" class="table_input_field">
             </label>
         </td>
         <td>
             <label>
                 Annual return (%):
-                <input type="number" id="percent" value="5" step="0.1">
+                <input type="number" id="percent" value="5" step="0.1" class="table_input_field">
             </label>
         </td>
-        <td>
-            <label>
-                Annual withdrawal:
-                <input type="number" id="withdrawal" value="20000" min="0">
-            </label>
-        </td>
+    </tr>
+    <tr>
+    <td>
+        <label>
+            Annual withdrawal:
+            <input type="number" id="withdrawal" value="20000" min="0" class="table_input_field">
+        </label>
+    </td>
     </tr>
     <tr>
         <td>
             <label>
                 Starting age:
-                <input type="number" id="age" value="62" min="0">
+                <input type="number" id="age" value="62" min="0" class="table_input_field">
             </label>
         </td>
         <td>
             <label>
                 Maximum years:
-                <input type="number" id="years" value="30" min="1" max="100">
+                <input type="number" id="years" value="30" min="1" max="100" class="table_input_field">
             </label>
         </td>
     </tr>
-<table>
+</table>
 
 <button  class="btn btn-primary w-25 mt-3" onclick="calculate()">
     Calculate
