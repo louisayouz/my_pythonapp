@@ -39,6 +39,7 @@ def quotes(portfolioid, calcyear=None):
                         for_year=for_year,
                         copy_prtf_button=( len(data) == 0 ) and prev_year_exist(portfolioid, (for_year-1)),
                         all_quotes = allquotes,
+                        for_month = datetime.now().month,
                         err=err)
     else:
         return render_template('quotes/quotes.html',
@@ -50,6 +51,7 @@ def quotes(portfolioid, calcyear=None):
                         for_year=for_year,
                         copy_prtf_button=( len(data) == 0 ) and prev_year_exist(portfolioid, (for_year-1)),
                         all_quotes = allquotes,
+                        for_month = datetime.now().month,
                         err=err)
 
 

@@ -191,10 +191,20 @@
             {% endif %}
             </td>
           </tr>
+          {%  set calc = 0 %}
 
-          {% set ns.total = ns.total + entry[4] %}
-          {% set nsc.total_cur = nsc.total_cur + ( entry[11] * entry[3])%}
+          {% if entry[7] %}
+          {% set calc = 1 if entry[7]*1 > for_month else 0 %}
+          {% else %}
+          {%  set calc = 1 %}
+          {% endif %}
+
+          {% if calc %}
+            {% set ns.total = ns.total + entry[4] %}
+            {% set nsc.total_cur = nsc.total_cur + ( entry[11] * entry[3])%}
+          {% endif %}
           {% set nns.divtotal = nns.divtotal + entry[9] %}
+
         {% endfor %}
       </tbody>
     </table>

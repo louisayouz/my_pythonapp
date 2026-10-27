@@ -120,6 +120,7 @@ def portfolio_quotes(portfolio_id, calc_year=None):
         for_year = datetime.now().year
     else:
         for_year = calc_year
+
 #for dividends only check existance for according year.
 # Summary payment do in stand alone request
     stmt ="""

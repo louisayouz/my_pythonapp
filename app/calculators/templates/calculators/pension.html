@@ -8,18 +8,28 @@
      <title>Pension Calculator</title>
 <style>
     label {
-            display: block;
-            margin-top: 10px;
-        }
+        display: block;
+        margin-top: 10px;
+    }
 
-        .my-table tbody tr td {
+    .my-table tbody tr td {
         background-color: transparent;
     }
+
+    .horizontal-scroll {
+        overflow-x: auto;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .horizontal-scroll table {
+        white-space: nowrap;
+    }
+
 </style>
 <body>
 
 <h3>Pension Calculator</h3>
-
 <table class="my-table">
     <tr>
         <td>
@@ -42,6 +52,9 @@
             <input type="number" id="withdrawal" value="20000" min="0" class="table_input_field">
         </label>
     </td>
+    <td>
+        &nbsp;
+    </td>
     </tr>
     <tr>
         <td>
@@ -58,23 +71,25 @@
         </td>
     </tr>
 </table>
+</body>
 
 <button  class="btn btn-primary w-25 mt-3" onclick="calculate()">
     Calculate
 </button>
 
-<div class="table-wrapper">
+<div class="table-responsive">
 <div id="summary"></div>
 
-<table class="table table-striped table-responsive">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Year</th>
             <th>Age</th>
             <th>Starting balance</th>
+            <th>Ending balance</th>
             <th>Interest</th>
             <th>Withdrawal</th>
-            <th>Ending balance</th>
+
         </tr>
     </thead>
     <tbody id="results"></tbody>
@@ -139,9 +154,10 @@ function calculate() {
             year,
             age,
             startingBalance,
+            base,
             interest,
-            actualWithdrawal,
-            base
+            actualWithdrawal
+
         ];
 
         values.forEach((value, index) => {
